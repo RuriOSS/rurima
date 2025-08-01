@@ -53,8 +53,8 @@ jobs:
       contents: read
     strategy:
       matrix:
-        arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64]
-        #arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64, s390x]
+        #arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64]
+        arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64, s390x]
     env:
       ARCHITECTURE: ${{ matrix.arch }}
     steps:
