@@ -249,11 +249,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		if (strcmp(argv[i], "ruri") == 0 || strcmp(argv[i], "r") == 0) {
-			extern char **environ;
-			if (environ != NULL && environ[0] != NULL) {
-				environ = NULL;
-				execve("/proc/self/exe", argv, NULL);
-			}
+			ruri_clear_env(argv);
 			ruri(argc - i, &argv[i]);
 			return 0;
 		}
