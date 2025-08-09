@@ -190,7 +190,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			}
 			runtime = argv[i + 1];
 			i++;
-		} else if (strcmp(argv[i], "-S") == 0 || strcmp(argv[i], "--skip-layer") == 0) {
+		} else if (strcmp(argv[i], "-S") == 0 || strcmp(argv[i], "--skip-layer") == 0 || strcmp(argv[i], "--start-at") == 0) {
 			if (i + 1 >= argc) {
 				rurima_error("{red}No skip layer specified!\n");
 			}
@@ -351,7 +351,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		cprintf("{base}  -q, --quiet: Quiet mode.\n");
 		cprintf("{base}  -f, --fallback: Fallback mode.\n");
 		cprintf("{base}  -T, --try-mirrors <mirror>: Try mirrors.\n");
-		cprintf("{base}  -S, --skip-layer [num]: Skip layers when pulling image.\n");
+		cprintf("{base}  -S, --start-at [num]: Start pulling layer at [num] when pulling image.\n");
 		cprintf("\n{base}Note: please remove `https://` prefix from mirror url.\n");
 		cprintf("{base}For example: `-m registry-1.docker.io`\n");
 		cprintf("{base}You can add your perfered mirrors for `-T` option to try them first, for example: `-T hub.xdark.top -T dockerpull.org`\n");

@@ -28,6 +28,11 @@
  *
  */
 #include "include/rurima.h"
+/*
+ * NOTE: skip_layer is actually "start at layer",
+ * but to keep compatible with old version,
+ * we still use skip_layer variable name.
+ */
 void rurima_free_docker_config(struct RURIMA_DOCKER *_Nonnull config)
 {
 	/*
