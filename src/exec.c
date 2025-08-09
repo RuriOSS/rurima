@@ -345,7 +345,7 @@ char *rurima_call_jq(const char *_Nonnull argv[], const char *_Nonnull input)
 		rurima_log("{cyan}argv[%d]: %s\n", i, argv[i]);
 	}
 	char *output = rurima_fork_execvp_get_stdout_with_input(argv, input);
-	if (strcmp(output, "null") == 0 || output == NULL) {
+	if (output == NULL || strcmp(output, "null") == 0) {
 		free(output);
 		return NULL;
 	}
