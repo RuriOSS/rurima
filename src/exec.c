@@ -33,13 +33,11 @@ static size_t get_max_pipe_size(void)
 {
 	int fd = open("/proc/sys/fs/pipe-max-size", O_RDONLY);
 	if (fd < 0) {
-		perror("open /proc/sys/fs/pipe-max-size");
 		return 65536; // Default pipe size
 	}
 	char buffer[16];
 	ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
 	if (bytes_read < 0) {
-		perror("read /proc/sys/fs/pipe-max-size");
 		close(fd);
 		return 65536; // Default pipe size
 	}
@@ -80,13 +78,11 @@ char *rurima_fork_execvp_get_stdout_ignore_err(const char *_Nonnull argv[])
 	// Create a pipe.
 	int pipefd[2];
 	if (pipe(pipefd) == -1) {
-		perror("pipe");
 		return NULL;
 	}
 	// fork(2) and then execvp(3).
 	int pid = fork();
 	if (pid == -1) {
-		perror("fork");
 		return NULL;
 	}
 	if (pid == 0) {
@@ -117,7 +113,6 @@ char *rurima_fork_execvp_get_stdout_ignore_err(const char *_Nonnull argv[])
 			}
 		}
 		if (bytes_read == -1) {
-			perror("read");
 			free(output);
 			close(pipefd[0]);
 			return NULL;
@@ -143,13 +138,11 @@ char *rurima_fork_execvp_get_stdout(const char *_Nonnull argv[])
 	// Create a pipe.
 	int pipefd[2];
 	if (pipe(pipefd) == -1) {
-		perror("pipe");
 		return NULL;
 	}
 	// fork(2) and then execvp(3).
 	int pid = fork();
 	if (pid == -1) {
-		perror("fork");
 		return NULL;
 	}
 	if (pid == 0) {
@@ -179,7 +172,6 @@ char *rurima_fork_execvp_get_stdout(const char *_Nonnull argv[])
 			}
 		}
 		if (bytes_read == -1) {
-			perror("read");
 			free(output);
 			close(pipefd[0]);
 			return NULL;
@@ -252,7 +244,6 @@ char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], cons
 	// Create a pipe.
 	int pipefd_in[2];
 	if (pipe(pipefd_in) == -1) {
-		perror("pipe");
 		return NULL;
 	}
 	// Set the maximum pipe size.
@@ -260,13 +251,11 @@ char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], cons
 	fcntl(pipefd_in[1], F_SETPIPE_SZ, max_pipe_size);
 	int pipefd_out[2];
 	if (pipe(pipefd_out) == -1) {
-		perror("pipe");
 		return NULL;
 	}
 	// fork(2) and then execvp(3).
 	int pid = fork();
 	if (pid == -1) {
-		perror("fork");
 		return NULL;
 	}
 	if (pid == 0) {
@@ -295,7 +284,6 @@ char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], cons
 		close(pipefd_in[0]);
 		// Write the input to the write end of the input pipe.
 		if (write(pipefd_in[1], input, strlen(input)) == -1) {
-			perror("write");
 			close(pipefd_in[1]);
 			close(pipefd_out[0]);
 			return NULL;
@@ -316,7 +304,6 @@ char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], cons
 			}
 		}
 		if (bytes_read == -1) {
-			perror("read");
 			free(output);
 			close(pipefd_out[0]);
 			return NULL;
