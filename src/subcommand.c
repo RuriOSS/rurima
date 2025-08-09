@@ -46,7 +46,7 @@ static char *add_library_prefix(char *_Nonnull image)
 	free(image);
 	return ret;
 }
-static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nonnull architecture, const char *_Nonnull savedir, char *_Nonnull try_mirrorlist[], bool fallback)
+static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nonnull architecture, const char *_Nonnull savedir, char *_Nonnull try_mirrorlist[], bool fallback, int skip_layer)
 {
 	/*
 	 * Try mirrors.
@@ -100,6 +100,10 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 		if (fallback) {
 			rexec_argv[12] = "-f";
 			rexec_argv[13] = NULL;
+			rurima_add_argv(&rexec_argv, "-S");
+			char skip_layer_str[16];
+			sprintf(skip_layer_str, "%d", skip_layer);
+			rurima_add_argv(&rexec_argv, skip_layer_str);
 			if (rurima_fork_rexec(rexec_argv) == 0) {
 				cprintf("\n{green}Success!\n");
 				exit(0);
@@ -108,6 +112,10 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 			}
 		} else {
 			rexec_argv[12] = NULL;
+			rurima_add_argv(&rexec_argv, "-S");
+			char skip_layer_str[16];
+			sprintf(skip_layer_str, "%d", skip_layer);
+			rurima_add_argv(&rexec_argv, skip_layer_str);
 			if (rurima_fork_rexec(rexec_argv) == 0) {
 				cprintf("\n{green}Success!\n");
 				exit(0);
@@ -136,6 +144,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 	bool quiet = false;
 	bool fallback = false;
 	bool try_mirrors = false;
+	int skip_layer = 0;
 	char *try_mirrorlist[1024] = { NULL };
 	if (argc == 0) {
 		rurima_error("{red}No subcommand specified!\n");
@@ -180,6 +189,15 @@ void rurima_docker(int argc, char **_Nonnull argv)
 				rurima_error("{red}No container runtime specified!\n");
 			}
 			runtime = argv[i + 1];
+			i++;
+		} else if (strcmp(argv[i], "-S") == 0 || strcmp(argv[i], "--skip-layer") == 0) {
+			if (i + 1 >= argc) {
+				rurima_error("{red}No skip layer specified!\n");
+			}
+			skip_layer = atoi(argv[i + 1]);
+			if (skip_layer < 0) {
+				rurima_error("{red}Skip layer must be a positive integer!\n");
+			}
 			i++;
 		} else if (strcmp(argv[i], "-s") == 0 || strcmp(argv[i], "--savedir") == 0) {
 			if (i + 1 >= argc) {
@@ -262,7 +280,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			architecture = rurima_docker_get_host_arch();
 		}
 		if (try_mirrors) {
-			docker_pull_try_mirrors(image, tag, architecture, savedir, try_mirrorlist, fallback);
+			docker_pull_try_mirrors(image, tag, architecture, savedir, try_mirrorlist, fallback, skip_layer);
 			exit(0);
 		}
 		if (!rurima_run_with_root()) {
@@ -271,7 +289,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			}
 		}
 		image = add_library_prefix(image);
-		struct RURIMA_DOCKER *config = rurima_docker_pull(image, tag, architecture, savedir, mirror, fallback);
+		struct RURIMA_DOCKER *config = rurima_docker_pull(image, tag, architecture, savedir, mirror, fallback, skip_layer);
 		if (!quiet) {
 			rurima_show_docker_config(config, savedir, runtime, quiet);
 			if (config->architecture != NULL) {
@@ -333,6 +351,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		cprintf("{base}  -q, --quiet: Quiet mode.\n");
 		cprintf("{base}  -f, --fallback: Fallback mode.\n");
 		cprintf("{base}  -T, --try-mirrors <mirror>: Try mirrors.\n");
+		cprintf("{base}  -S, --skip-layer [num]: Skip layers when pulling image.\n");
 		cprintf("\n{base}Note: please remove `https://` prefix from mirror url.\n");
 		cprintf("{base}For example: `-m registry-1.docker.io`\n");
 		cprintf("{base}You can add your perfered mirrors for `-T` option to try them first, for example: `-T hub.xdark.top -T dockerpull.org`\n");

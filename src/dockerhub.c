@@ -523,7 +523,7 @@ static char *get_short_sha(const char *_Nonnull sha)
 	ret[16] = '\0';
 	return ret;
 }
-static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs, const char *_Nonnull token, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback)
+static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs, const char *_Nonnull token, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layer)
 {
 	/*
 	 * Pull images.
@@ -544,7 +544,14 @@ static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs,
 	if (mirror == NULL) {
 		mirror = rurima_global_config.docker_mirror;
 	}
-	for (int i = 0;; i++) {
+	int count = 0;
+	for (int i = 0; blobs[i] != NULL; i++) {
+		count++;
+	}
+	if (count <= skip_layer) {
+		rurima_error("{red}Skip layer is larger than or equal to the number of layers!\n");
+	}
+	for (int i = skip_layer;; i++) {
 		if (blobs[i] == NULL) {
 			break;
 		}
@@ -852,7 +859,7 @@ struct RURIMA_DOCKER *rurima_get_docker_config(const char *_Nonnull image, const
 	free(config);
 	return ret;
 }
-static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nonnull savedir, const char *_Nullable mirror)
+static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nonnull savedir, const char *_Nullable mirror, int skip_layer)
 {
 	/*
 	 * Warning: free() the return value after use.
@@ -878,7 +885,7 @@ static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, co
 	if (len == 0) {
 		rurima_error("{red}Failed to get digest!\n");
 	}
-	pull_images(image, blobs, token, savedir, mirror, true);
+	pull_images(image, blobs, token, savedir, mirror, true, skip_layer);
 	free(token);
 	token = get_token(image, mirror, true);
 	char *config = get_config_digest_fallback(image, tag, token, mirror);
@@ -893,7 +900,7 @@ static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, co
 	free(layers);
 	return ret;
 }
-struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nullable architecture, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback)
+struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nullable architecture, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layers)
 {
 	/*
 	 * Warning: free() the return value after use.
@@ -915,13 +922,13 @@ struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char 
 		if (!fallback) {
 			rurima_error("{red}Failed to get digest!\n");
 		}
-		return docker_pull_fallback(image, tag, savedir, mirror);
+		return docker_pull_fallback(image, tag, savedir, mirror, skip_layers);
 	}
 	char **blobs = get_blobs(image, digest, token, mirror);
 	if (blobs == NULL) {
 		rurima_error("{red}Failed to get blobs!\n");
 	}
-	pull_images(image, blobs, token, savedir, mirror, fallback);
+	pull_images(image, blobs, token, savedir, mirror, fallback, skip_layers);
 	if (fallback) {
 		free(token);
 		token = get_token(image, mirror, true);

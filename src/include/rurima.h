@@ -175,7 +175,7 @@ int rurima_mkdirs(const char *_Nonnull path, mode_t mode);
 bool rurima_run_with_root(void);
 int rurima_docker_search(const char *_Nonnull image, const char *_Nonnull page_size, bool quiet, const char *_Nullable mirror);
 int rurima_docker_search_tag(const char *_Nonnull image, const char *_Nonnull page_size, const char *_Nullable architecture, bool quiet, const char *_Nullable mirror);
-struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nullable architecture, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback);
+struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nullable architecture, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layer);
 void rurima_register_signal(void);
 char *rurima_docker_get_host_arch(void);
 char *rurima_lxc_get_host_arch(void);
