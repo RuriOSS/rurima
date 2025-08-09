@@ -219,7 +219,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 	if (mirror == NULL) {
 		mirror = rurima_global_config.docker_mirror;
 	}
-	if (strcmp(mirror, "registry-1.docker.io") != 0) {
+	if (strcmp(mirror, rurima_global_config.docker_mirror) != 0) {
 		if (!quiet) {
 			rurima_warning("{yellow}You are using unofficial mirror:{cyan} %s\n", mirror);
 			rurima_warning("{yellow}You use it as your own risk.\n")
@@ -232,6 +232,9 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		if (page_size == NULL) {
 			page_size = "10";
 		}
+		if (mirror == NULL) {
+			mirror = "hub.docker.com";
+		}
 		rurima_docker_search(image, page_size, quiet, mirror);
 	} else if (strcmp(argv[0], "tag") == 0) {
 		if (page_size == NULL) {
@@ -241,6 +244,9 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			rurima_error("{red}No image specified!\n");
 		}
 		image = add_library_prefix(image);
+		if (mirror == NULL) {
+			mirror = "hub.docker.com";
+		}
 		rurima_docker_search_tag(image, page_size, architecture, quiet, mirror);
 	} else if (strcmp(argv[0], "pull") == 0) {
 		if (tag == NULL) {
@@ -302,6 +308,9 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		image = add_library_prefix(image);
 		if (tag == NULL) {
 			rurima_error("{red}No tag specified!\n");
+		}
+		if (mirror == NULL) {
+			mirror = "hub.docker.com";
 		}
 		rurima_docker_search_arch(image, tag, mirror, fallback);
 	} else if (strcmp(argv[0], "help") == 0 || strcmp(argv[0], "-h") == 0 || strcmp(argv[0], "--help") == 0) {
