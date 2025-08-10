@@ -138,7 +138,7 @@ struct RURIMA_DOCKER {
 		cfprintf(stderr, "{base}%s{clear}\n", "  /⋀\\_ﾉ_/⋀\\");                                                \
 		cfprintf(stderr, "{base}%s{clear}\n", " /ﾉｿﾉ\\ﾉｿ丶)|");                                                \
 		cfprintf(stderr, "{base}%s{clear}\n", " ﾙﾘﾘ >  x )ﾘ");                                                 \
-		cfprintf(stderr, "{base}%s{clear}\n", "ﾉノ㇏  ^ ﾉ|ﾉ");                                                 \
+		cfprintf(stderr, "{base}%s{clear}\n", "ﾉノ㇏  ^  ﾉ|ﾉ");                                                \
 		cfprintf(stderr, "{base}%s{clear}\n", "      ⠁⠁");                                                     \
 		cfprintf(stderr, "{base}%s{clear}\n", "RURIMA ERROR MESSAGE");                                         \
 		cfprintf(stderr, "{base}%s{clear}\n", "Hint:");                                                        \
@@ -165,6 +165,16 @@ extern bool disable_rurima_log;
 #else
 #define rurima_log(format, ...)
 #endif
+
+struct RURIMA_DOCKER_PULL {
+	const char *image;
+	const char *tag;
+	const char *architecture;
+	const char *savedir;
+	const char *mirror;
+	bool fallback;
+	int skip_layer;
+};
 // Functions.
 int rurima_fork_execvp(const char *_Nonnull argv[]);
 char *rurima_fork_execvp_get_stdout(const char *_Nonnull argv[]);
@@ -175,7 +185,7 @@ int rurima_mkdirs(const char *_Nonnull path, mode_t mode);
 bool rurima_run_with_root(void);
 int rurima_docker_search(const char *_Nonnull image, const char *_Nonnull page_size, bool quiet, const char *_Nullable mirror);
 int rurima_docker_search_tag(const char *_Nonnull image, const char *_Nonnull page_size, const char *_Nullable architecture, bool quiet, const char *_Nullable mirror);
-struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nullable architecture, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layer);
+struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull action);
 void rurima_register_signal(void);
 char *rurima_docker_get_host_arch(void);
 char *rurima_lxc_get_host_arch(void);

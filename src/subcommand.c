@@ -289,7 +289,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			}
 		}
 		image = add_library_prefix(image);
-		struct RURIMA_DOCKER *config = rurima_docker_pull(image, tag, architecture, savedir, mirror, fallback, skip_layer);
+		struct RURIMA_DOCKER *config = rurima_docker_pull(&(struct RURIMA_DOCKER_PULL){ .image = image, .tag = tag, .architecture = architecture, .savedir = savedir, .mirror = mirror, .fallback = fallback, .skip_layer = skip_layer });
 		if (!quiet) {
 			rurima_show_docker_config(config, savedir, runtime, quiet);
 			if (config->architecture != NULL) {

@@ -905,7 +905,7 @@ static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, co
 	free(layers);
 	return ret;
 }
-struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char *_Nonnull tag, const char *_Nullable architecture, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layers)
+struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull action)
 {
 	/*
 	 * Warning: free() the return value after use.
@@ -915,6 +915,13 @@ struct RURIMA_DOCKER *rurima_docker_pull(const char *_Nonnull image, const char 
 	 * And we return the config of image.
 	 *
 	 */
+	const char *image = action->image;
+	const char *tag = action->tag;
+	const char *architecture = action->architecture;
+	const char *savedir = action->savedir;
+	const char *mirror = action->mirror;
+	int skip_layers = action->skip_layer;
+	bool fallback = action->fallback;
 	if (mirror == NULL) {
 		mirror = rurima_global_config.docker_mirror;
 	}
