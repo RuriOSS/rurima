@@ -470,7 +470,11 @@ static char *get_tag_digest(const char *_Nonnull manifests, const char *_Nullabl
 	free(tmp);
 	return digest;
 }
-static char **get_blobs(const char *_Nonnull image, const char *_Nonnull digest, const char *_Nonnull token, const char *_Nullable mirror)
+struct BLOBS {
+	char **_Nonnull blobs;
+	size_t *_Nonnull size; // size of each blob
+};
+static struct BLOBS *get_blobs(const char *_Nonnull image, const char *_Nonnull digest, const char *_Nonnull token, const char *_Nullable mirror)
 {
 	/*
 	 * Warning: free() the return value after use.
@@ -501,10 +505,28 @@ static char **get_blobs(const char *_Nonnull image, const char *_Nonnull digest,
 	if (layers == NULL) {
 		rurima_error("{red}Failed to get layers!\n");
 	}
-	char **ret = NULL;
+	struct BLOBS *ret = malloc(sizeof(struct BLOBS));
+	ret->blobs = NULL;
+	ret->size = NULL;
 	const char *jq_cmd_1[] = { "jq", "-r", ".[] | .digest", NULL };
 	char *layers_orig = rurima_call_jq(jq_cmd_1, layers);
-	size_t len = rurima_split_lines(layers_orig, &ret);
+	size_t len = rurima_split_lines(layers_orig, &ret->blobs);
+	char **size_char = NULL;
+	const char *jq_cmd_2[] = { "jq", "-r", ".[] | .size", NULL };
+	char *layers_size = rurima_call_jq(jq_cmd_2, layers);
+	if (layers_size == NULL) {
+		rurima_error("{red}Failed to get layers size!\n");
+	}
+	len = rurima_split_lines(layers_size, &size_char);
+	ret->size = malloc(sizeof(size_t) * (len + 1));
+	for (size_t i = 0; i < len; i++) {
+		ret->size[i] = (size_t)strtoull(size_char[i], NULL, 10);
+	}
+	for (size_t i = 0; i < len; i++) {
+		free(size_char[i]);
+	}
+	free(size_char);
+	free(layers_size);
 	free(layers_orig);
 	if (len == 0) {
 		rurima_error("{red}Failed to get layers!\n");
@@ -528,7 +550,7 @@ static char *get_short_sha(const char *_Nonnull sha)
 	ret[16] = '\0';
 	return ret;
 }
-static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs, const char *_Nonnull token, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layer)
+static void pull_images(const char *_Nonnull image, struct BLOBS *const _Nonnull blobs, const char *_Nonnull token, const char *_Nonnull savedir, const char *_Nullable mirror, bool fallback, int skip_layer)
 {
 	/*
 	 * Pull images.
@@ -550,20 +572,20 @@ static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs,
 		mirror = rurima_global_config.docker_mirror;
 	}
 	int count = 0;
-	for (int i = 0; blobs[i] != NULL; i++) {
+	for (int i = 0; blobs->blobs[i] != NULL; i++) {
 		count++;
 	}
 	if (count <= skip_layer) {
 		rurima_error("{red}Skip layer is larger than or equal to the number of layers!\n");
 	}
 	for (int i = skip_layer;; i++) {
-		if (blobs[i] == NULL) {
+		if (blobs->blobs[i] == NULL) {
 			break;
 		}
-		char *sha = get_short_sha(blobs[i]);
+		char *sha = get_short_sha(blobs->blobs[i]);
 		cprintf("{base}Pulling{cyan} %s {base}as{cyan} layer-%d\n", sha, i);
 		free(sha);
-		sprintf(url, "https://%s/v2/%s/blobs/%s", mirror, image, blobs[i]);
+		sprintf(url, "https://%s/v2/%s/blobs/%s", mirror, image, blobs->blobs[i]);
 		sprintf(filename, "layer-%d", i);
 		if (fallback) {
 			token_tmp = get_token(image, mirror, fallback);
@@ -575,8 +597,13 @@ static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs,
 		sprintf(auth, "Authorization: Bearer %s", token_tmp);
 		free(token_tmp);
 		rurima_log("{base}Command:\n{cyan}curl -L -s -H \"%s\" %s -o %s\n", auth, url, filename);
-		const char *curl_command[] = { "curl", "-L", "-s", "-H", auth, url, "-o", filename, NULL };
-		int ret = rurima_fork_execvp(curl_command);
+		int ret = 0;
+		if (!fallback) {
+			ret = rurima_download_file(url, filename, auth, blobs->size[i]);
+		} else {
+			const char *curl_command[] = { "curl", "-L", "-s", "-H", auth, url, "-o", filename, NULL };
+			ret = rurima_fork_execvp(curl_command);
+		}
 		if (ret != 0) {
 			rurima_error("{red}Failed to pull image!\n");
 		}
@@ -592,7 +619,7 @@ static void pull_images(const char *_Nonnull image, char *const *_Nonnull blobs,
 			}
 			*strchr(sha256, ' ') = '\0';
 			rurima_log("{base}SHA256: %s\n", sha256);
-			if (strcmp(sha256, &(blobs[i][7])) != 0) {
+			if (strcmp(sha256, &(blobs->blobs[i][7])) != 0) {
 				rurima_error("{red}SHA256 mismatch!\n");
 			}
 			rurima_log("{base}SHA256 match!\n");
@@ -877,7 +904,7 @@ static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, co
 	}
 	char *token = get_token(image, mirror, true);
 	char *manifests = get_tag_manifests(image, tag, token, mirror);
-	char **blobs = NULL;
+	struct BLOBS blobs;
 	const char *jq_cmd_0[] = { "jq", "-r", ".layers", NULL };
 	char *layers = rurima_call_jq(jq_cmd_0, manifests);
 	if (layers == NULL) {
@@ -885,22 +912,22 @@ static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, co
 	}
 	const char *jq_cmd_1[] = { "jq", "-r", ".[] | .digest", NULL };
 	char *layers_orig = rurima_call_jq(jq_cmd_1, layers);
-	size_t len = rurima_split_lines(layers_orig, &blobs);
+	size_t len = rurima_split_lines(layers_orig, &blobs.blobs);
+	blobs.size = malloc(sizeof(size_t) * (len + 1));
+	for (size_t i = 0; i < len; i++) {
+		blobs.size[i] = (size_t)0; // Fallback, we don't know the size.
+	}
 	free(layers_orig);
 	if (len == 0) {
 		rurima_error("{red}Failed to get digest!\n");
 	}
-	pull_images(image, blobs, token, savedir, mirror, true, skip_layer);
+	pull_images(image, &blobs, token, savedir, mirror, true, skip_layer);
 	free(token);
 	token = get_token(image, mirror, true);
 	char *config = get_config_digest_fallback(image, tag, token, mirror);
 	struct RURIMA_DOCKER *ret = get_image_config(image, config, token, mirror);
 	free(manifests);
 	free(token);
-	for (size_t i = 0; blobs[i] != NULL; i++) {
-		free(blobs[i]);
-	}
-	free(blobs);
 	free(config);
 	free(layers);
 	return ret;
@@ -936,7 +963,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 		}
 		return docker_pull_fallback(image, tag, savedir, mirror, skip_layers);
 	}
-	char **blobs = get_blobs(image, digest, token, mirror);
+	struct BLOBS *blobs = get_blobs(image, digest, token, mirror);
 	if (blobs == NULL) {
 		rurima_error("{red}Failed to get blobs!\n");
 	}
@@ -954,9 +981,11 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	free(manifests);
 	free(token);
 	free(digest);
-	for (size_t i = 0; blobs[i] != NULL; i++) {
-		free(blobs[i]);
+	free(blobs->size);
+	for (size_t i = 0; blobs->blobs[i] != NULL; i++) {
+		free(blobs->blobs[i]);
 	}
+	free(blobs->blobs);
 	free(blobs);
 	free(config);
 	return ret;
