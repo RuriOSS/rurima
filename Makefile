@@ -94,12 +94,6 @@ clean :
 	@rm -rf $(O)||true
 	$(CLEAN_LOG) peda*
 	@rm -f peda*
-upk2v :
-	cp ../libk2v/src/k2v.c src/k2v.c
-	cp ../libk2v/src/include/k2v.h src/include/k2v.h
-upcprintf :
-	cp ../cprintf/cprintf.c src/cprintf.c
-	cp ../cprintf/include/cprintf.h src/include/cprintf.h
 help :
 	@printf "\033[1;38;2;254;228;208mUsage:\n"
 	@echo "  make all            compile"
@@ -108,11 +102,3 @@ help :
 	@echo "Only for developers:"
 	@echo "  make check          run clang-tidy"
 	@echo "  make format         format code"
-config :
-	@./gen-config
-dbg_config :
-	@./gen-config -d -D
-dev_config :
-	@./gen-config -d
-static_config :
-	@./gen-config -s
