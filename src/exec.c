@@ -56,6 +56,9 @@ int rurima_fork_execvp(const char *_Nonnull argv[])
 	 * fork(2) and then execvp(3).
 	 * Return the exit status of the child process.
 	 */
+	for (int i = 0; argv[i] != NULL; i++) {
+		rurima_log("{base}Argv[%d]: %s\n", i, argv[i]);
+	}
 	int pid = fork();
 	if (pid == 0) {
 		execvp(argv[0], (char **)argv);
@@ -79,6 +82,9 @@ char *rurima_fork_execvp_get_stdout_ignore_err(const char *_Nonnull argv[])
 	int pipefd[2];
 	if (pipe(pipefd) == -1) {
 		return NULL;
+	}
+	for (int i = 0; argv[i] != NULL; i++) {
+		rurima_log("{base}Argv[%d]: %s\n", i, argv[i]);
 	}
 	// fork(2) and then execvp(3).
 	int pid = fork();
@@ -139,6 +145,9 @@ char *rurima_fork_execvp_get_stdout(const char *_Nonnull argv[])
 	int pipefd[2];
 	if (pipe(pipefd) == -1) {
 		return NULL;
+	}
+	for (int i = 0; argv[i] != NULL; i++) {
+		rurima_log("{base}Argv[%d]: %s\n", i, argv[i]);
 	}
 	// fork(2) and then execvp(3).
 	int pid = fork();
@@ -336,5 +345,6 @@ char *rurima_call_jq(const char *_Nonnull argv[], const char *_Nonnull input)
 		free(output);
 		return NULL;
 	}
+	rurima_log("{base}jq output: {cyan}%s{clear}\n", output);
 	return output;
 }
