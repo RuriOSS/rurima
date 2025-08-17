@@ -85,44 +85,34 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 	char *mirrorlist_builtin[] = { rurima_global_config.docker_mirror, "hub.xdark.top", "dockerpull.org", "hub.crdz.gq", "docker.1panel.live", "docker.unsee.tech", "docker.m.daocloud.io", "docker.kejinlion.pro", "registry.dockermirror.com", "hub.rat.dev", "dhub.kubesre.xyz", "docker.nastool.de", "docker.udayun.com", "docker.rainbond.cc", "hub.geekery.cn", "registry.hub.docker.com", NULL };
 	for (int i = 0; mirrorlist_builtin[i] != NULL; i++) {
 		cprintf("{base}Trying mirror: {cyan}%s\n", mirrorlist_builtin[i]);
-		rexec_argv[0] = "docker";
-		rexec_argv[1] = "pull";
-		rexec_argv[2] = "-i";
-		rexec_argv[3] = (char *)image;
-		rexec_argv[4] = "-t";
-		rexec_argv[5] = (char *)tag;
-		rexec_argv[6] = "-a";
-		rexec_argv[7] = (char *)architecture;
-		rexec_argv[8] = "-s";
-		rexec_argv[9] = (char *)savedir;
-		rexec_argv[10] = "-m";
-		rexec_argv[11] = (char *)mirrorlist_builtin[i];
+		char **rexec_argv_builtin = malloc(128 * sizeof(char *));
+		rexec_argv_builtin[0] = NULL;
+		rurima_add_argv(&rexec_argv_builtin, "docker");
+		rurima_add_argv(&rexec_argv_builtin, "pull");
+		rurima_add_argv(&rexec_argv_builtin, "-i");
+		rurima_add_argv(&rexec_argv_builtin, (char *)image);
+		rurima_add_argv(&rexec_argv_builtin, "-t");
+		rurima_add_argv(&rexec_argv_builtin, (char *)tag);
+		rurima_add_argv(&rexec_argv_builtin, "-a");
+		rurima_add_argv(&rexec_argv_builtin, (char *)architecture);
+		rurima_add_argv(&rexec_argv_builtin, "-s");
+		rurima_add_argv(&rexec_argv_builtin, (char *)savedir);
+		rurima_add_argv(&rexec_argv_builtin, "-m");
+		rurima_add_argv(&rexec_argv_builtin, (char *)mirrorlist_builtin[i]);
 		if (fallback) {
-			rexec_argv[12] = "-f";
-			rexec_argv[13] = NULL;
-			rurima_add_argv(&rexec_argv, "-S");
-			char skip_layer_str[16];
-			sprintf(skip_layer_str, "%d", skip_layer);
-			rurima_add_argv(&rexec_argv, skip_layer_str);
-			if (rurima_fork_rexec(rexec_argv) == 0) {
-				cprintf("\n{green}Success!\n");
-				exit(0);
-			} else {
-				cprintf("\n{yellow}Mirror {cyan}%s {yellow}is not working!\n\n", mirrorlist_builtin[i]);
-			}
-		} else {
-			rexec_argv[12] = NULL;
-			rurima_add_argv(&rexec_argv, "-S");
-			char skip_layer_str[16];
-			sprintf(skip_layer_str, "%d", skip_layer);
-			rurima_add_argv(&rexec_argv, skip_layer_str);
-			if (rurima_fork_rexec(rexec_argv) == 0) {
-				cprintf("\n{green}Success!\n");
-				exit(0);
-			} else {
-				cprintf("\n{yellow}Mirror {cyan}%s {yellow}is not working!\n\n", mirrorlist_builtin[i]);
-			}
+			rurima_add_argv(&rexec_argv_builtin, "-f");
 		}
+		rurima_add_argv(&rexec_argv_builtin, "-S");
+		char skip_layer_str[16];
+		sprintf(skip_layer_str, "%d", skip_layer);
+		rurima_add_argv(&rexec_argv_builtin, skip_layer_str);
+		if (rurima_fork_rexec(rexec_argv_builtin) == 0) {
+			cprintf("\n{green}Success!\n");
+			exit(0);
+		} else {
+			cprintf("\n{yellow}Mirror {cyan}%s {yellow}is not working!\n\n", mirrorlist_builtin[i]);
+		}
+		free(rexec_argv_builtin);
 	}
 	cprintf("{red}All mirrors are not working!\n");
 }

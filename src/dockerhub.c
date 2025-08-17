@@ -599,7 +599,7 @@ static void pull_images(const char *_Nonnull image, struct BLOBS *const _Nonnull
 		rurima_log("{base}Command:\n{cyan}curl -L -s -H \"%s\" %s -o %s\n", auth, url, filename);
 		int ret = 0;
 		if (!fallback) {
-			ret = rurima_download_file(url, filename, auth, blobs->size[i]);
+			ret = rurima_download_file(url, filename, auth, (ssize_t)blobs->size[i]);
 		} else {
 			const char *curl_command[] = { "curl", "-L", "-s", "-H", auth, url, "-o", filename, NULL };
 			ret = rurima_fork_execvp(curl_command);
