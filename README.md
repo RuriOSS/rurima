@@ -8,7 +8,8 @@
 
 # Terms of Use:
 See [TERMS_OF_USE.md](TERMS_OF_USE.md)
-
+# For Android user:
+You might need to root your phone before using rurima, some container might not work properly with proot.      
 # WARNING:
 For production, I fully recommand you to use tools like [crun](https://github.com/containers/crun), [youki](https://github.com/youki-dev/youki), [containerd](https://containerd.io/), [docker](https://www.docker.com/), [podman](https://podman.io/), [LXC](https://linuxcontainers.org/), [bubblewrap](https://github.com/containers/bubblewrap), they are more secure and stable. This is a non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!        
 # NOTE:
