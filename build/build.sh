@@ -18,13 +18,11 @@ mkdir output
 git clone --depth 1 https://github.com/moe-hacker/rurima.git
 cd rurima
 git submodule update --init --recursive
-./autogen.sh
-./configure --enable-static
-make
+cc build.c -o build
+./build -s -f
 strip rurima
 cp rurima ../output/rurima
-./configure --enable-static --enable-debug --enable-dev
-make
+./build -s -f -d
 cp rurima ../output/rurima-dbg
 cp LICENSE ../output/LICENSE
 exit 0
