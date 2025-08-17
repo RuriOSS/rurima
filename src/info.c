@@ -59,6 +59,7 @@ void rurima_show_version_info(void)
 	cprintf("{base}%s%s\n", "Build date ......................:  ", __TIMESTAMP__);
 	cprintf("{base}\nThere is NO WARRANTY, to the extent permitted by law\n");
 	cprintf("{base}Docker is a registered trademark of Docker, Inc\nThis program has no relationship with it\n");
+	cprintf("{base}\nThis program has Super Neko Powers!!!\n");
 	cprintf("{clear}\n");
 }
 // For `rurima -V`.
