@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 /*
  *
- * This file is part of cprintf, with ABSOLUTELY NO WARRANTY.
+ * This file is part of cpprintf, with ABSOLUTELY NO WARRANTY.
  *
  * MIT License
  *
@@ -69,10 +69,15 @@
 		on_exit__(SIGINT);                                                       \
 		exit(ERROR_NUM);                                                         \
 	}
+#define pprintf(...)                      \
+	{                                 \
+		printf("%d: ", getpid()); \
+		printf(__VA_ARGS__);      \
+	}
 void remove_test_dot_c(void);
 void on_exit__(int sig)
 {
-	printf("Exiting %d......\n", getpid());
+	pprintf("Exiting %d......\n", getpid());
 	while (waitpid(-1, NULL, WNOHANG) > 0)
 		;
 	remove_test_dot_c();
@@ -268,12 +273,12 @@ bool check_c_flag(const char *flag)
 		add_args(&args, LIBS[i]);
 	}
 	if (fork_exec(args) != 0) {
-		printf("Check for flag %s :failed\n", flag);
+		pprintf("Check for flag %s :failed\n", flag);
 		free_args(args);
 		return false;
 	}
 	free_args(args);
-	printf("Check for flag %s :success\n", flag);
+	pprintf("Check for flag %s :success\n", flag);
 	return true;
 }
 // Check if we can use a specific library
@@ -293,12 +298,12 @@ bool check_lib(const char *lib)
 	}
 	add_args(&args, lib);
 	if (fork_exec(args) != 0) {
-		printf("Check for lib %s :failed\n", lib);
+		pprintf("Check for lib %s :failed\n", lib);
 		free_args(args);
 		return false;
 	}
 	free_args(args);
-	printf("Check for lib %s :success\n", lib);
+	pprintf("Check for lib %s :success\n", lib);
 	return true;
 }
 // init
@@ -335,16 +340,16 @@ void init_env(void)
 		error("Error: Compiler %s failed to compile %s\n", CC, "test.c");
 		exit(ERROR_NUM);
 	}
-	printf("CC: %s\n", CC);
+	pprintf("CC: %s\n", CC);
 	free_args(arg);
 	char *commit_id = fork_execvp_get_stdout((const char *[]){ "git", "-C", "..", "rev-parse", "--short", "HEAD", NULL });
 	if (commit_id) {
 		if (commit_id[strlen(commit_id) - 1] == '\n') {
 			commit_id[strlen(commit_id) - 1] = '\0';
 		}
-		printf("Commit ID: %s\n", commit_id);
+		pprintf("Commit ID: %s\n", commit_id);
 	} else {
-		printf("Warning: failed to get commit ID\n");
+		pprintf("Warning: failed to get commit ID\n");
 	}
 	COMMIT_ID = commit_id;
 	char *ruri_commit_id = fork_execvp_get_stdout((const char *[]){ "git", "-C", "../src/ruri", "rev-parse", "--short", "HEAD", NULL });
@@ -352,15 +357,15 @@ void init_env(void)
 		if (ruri_commit_id[strlen(ruri_commit_id) - 1] == '\n') {
 			ruri_commit_id[strlen(ruri_commit_id) - 1] = '\0';
 		}
-		printf("RURI Commit ID: %s\n", ruri_commit_id);
+		pprintf("RURI Commit ID: %s\n", ruri_commit_id);
 	} else {
-		printf("Warning: failed to get RURI commit ID\n");
+		pprintf("Warning: failed to get RURI commit ID\n");
 	}
 	RURI_COMMIT_ID = ruri_commit_id;
 	if (fork_exec((char *[]){ STRIP, "--version", NULL }) != 0) {
 		STRIP = NULL;
 	} else {
-		printf("STRIP: %s\n", STRIP);
+		pprintf("STRIP: %s\n", STRIP);
 	}
 }
 // Switch to the build directory
@@ -405,7 +410,7 @@ int copy_file(const char *src, const char *dest)
 	int dest_fd = open(dest, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (dest_fd < 0) {
 		perror("Error opening destination file");
-		printf("%s\n", dest);
+		pprintf("%s\n", dest);
 		close(src_fd);
 		return -1;
 	}
@@ -508,7 +513,7 @@ void compile(char *file)
 	sprintf(saved_source_file, ".%s.c", output_file);
 	if (access(saved_source_file, F_OK) == 0 && access(output_file, F_OK) == 0) {
 		if (!file_diff(file, saved_source_file) && !FORCE) {
-			printf("Compile %s :skipped\n", file);
+			pprintf("Compile %s :skipped\n", file);
 			free_args(args);
 			return;
 		}
@@ -523,7 +528,7 @@ void compile(char *file)
 		error("Error: Compiler %s failed to compile %s\n", CC, file);
 	}
 	free_args(args);
-	printf("Compile %s :success\n", file);
+	pprintf("Compile %s :success\n", file);
 }
 int pmcrts(const char *s1, const char *s2)
 {
@@ -669,19 +674,19 @@ void build()
 	if (fork_exec(args) != 0) {
 		error("Error: failed to link object files\n");
 	}
-	printf("Link %s :success\n", OUTPUT);
+	pprintf("Link %s :success\n", OUTPUT);
 	free_args(args);
 	// Strip
 	if (STRIP) {
 		if (fork_exec((char *[]){ STRIP, OUTPUT, NULL }) != 0) {
 			error("Error: failed to strip object files\n");
 		} else {
-			printf("Strip %s :success\n", OUTPUT);
+			pprintf("Strip %s :success\n", OUTPUT);
 		}
 	} else {
-		printf("Skipping strip: STRIP not set\n");
+		pprintf("Skipping strip: STRIP not set\n");
 	}
-	printf("Output: %s\n", OUTPUT);
+	pprintf("Output: %s\n", OUTPUT);
 }
 // As the name said
 void check_and_add_cflag(char *flag, bool panic)
@@ -754,12 +759,12 @@ void dev_cflags(void)
 void show_help(void)
 {
 	char *self_path = realpath("/proc/self/exe", NULL);
-	printf("Usage: ./%s [OPTION]...\n", basename_of(self_path));
-	printf("    -h, --help             show help\n");
-	printf("    -s, --static           compile static binary\n");
-	printf("    -d, --dev              compile dev version\n");
-	printf("    -f, --force            force rebuild\n");
-	printf("    -j, --jobs <num>       number of jobs to run simultaneously\n");
+	pprintf("Usage: ./%s [OPTION]...\n", basename_of(self_path));
+	pprintf("    -h, --help             show help\n");
+	pprintf("    -s, --static           compile static binary\n");
+	pprintf("    -d, --dev              compile dev version\n");
+	pprintf("    -f, --force            force rebuild\n");
+	pprintf("    -j, --jobs <num>       number of jobs to run simultaneously\n");
 }
 // So good brooooo, the program works with magic here.
 int main(int argc, char **argv)
