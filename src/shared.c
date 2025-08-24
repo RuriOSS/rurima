@@ -33,7 +33,7 @@ void end_animation(int unused__)
 	printf("\r\e[K\033[0m\033[?25h");
 	exit(0);
 }
-extern pid_t loading_animation_pid = 0;
+pid_t loading_animation_pid = 0;
 void start_loading_animation(char *msg)
 {
 	if (rurima_global_config.no_process) {
