@@ -54,7 +54,6 @@ if test "$enable_dev" != "no";then
     CHECK_AND_ADD_CFLAGS([-ffunction-sections])
     CHECK_AND_ADD_CFLAGS([-fdata-sections])
     CHECK_AND_ADD_CFLAGS([-Wl,--gc-sections])
-    CHECK_AND_ADD_CFLAGS([-Wl,--disable-new-dtags])
 else
     DEV_CFLAGS=""
     CHECK_AND_ADD_CFLAGS([-ftrivial-auto-var-init=pattern])
@@ -75,7 +74,6 @@ else
     CHECK_AND_ADD_CFLAGS([-ffunction-sections])
     CHECK_AND_ADD_CFLAGS([-fdata-sections])
     CHECK_AND_ADD_CFLAGS([-Wl,--gc-sections])
-    CHECK_AND_ADD_CFLAGS([-Wl,--disable-new-dtags])
     CHECK_AND_ADD_CFLAGS([-Wl,--strip-all])
     CHECK_AND_ADD_CFLAGS([-U_FORTIFY_SOURCE])
     CHECK_AND_ADD_CFLAGS([-D_FORTIFY_SOURCE=3])
