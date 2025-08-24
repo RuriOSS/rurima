@@ -69,10 +69,9 @@
 		on_exit__(SIGINT);                                                       \
 		exit(ERROR_NUM);                                                         \
 	}
-#define pprintf(...)                      \
-	{                                 \
-		printf("%d: ", getpid()); \
-		printf(__VA_ARGS__);      \
+#define pprintf(...)                 \
+	{                            \
+		printf(__VA_ARGS__); \
 	}
 void remove_test_dot_c(void);
 void on_exit__(int sig)

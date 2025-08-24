@@ -51,6 +51,7 @@ static void show_help(void)
 	cprintf("{base}  help, h   : Show help message.\n");
 	cprintf("{base}  dep       : Check dependencies.\n");
 	cprintf("{base}Options:\n");
+	cprintf("{base}  -q, --quiet: Disable all unnecessary output.\n");
 	cprintf("{base}  -h, --help: Show help message.\n");
 	cprintf("{base}  -v, --version: Show version info.\n");
 	cprintf("{base}  -V, --version-code: Show version code.\n");
@@ -191,6 +192,8 @@ int main(int argc, char **argv)
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0) {
 			disable_rurima_log = true;
+			rurima_global_config.quiet = true;
+			rurima_global_config.no_process = true;
 			continue;
 		}
 		if (strcmp(argv[i], "docker") == 0 || strcmp(argv[i], "d") == 0) {

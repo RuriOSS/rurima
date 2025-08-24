@@ -132,6 +132,7 @@ struct RURIMA_DOCKER {
 // Show error msg and exit.
 #define rurima_error(format, ...)                                                                                      \
 	{                                                                                                              \
+		end_loading_animation();                                                                               \
 		cfprintf(stderr, "{red}In %s() in %s line %d:\n", __func__, __FILE__, __LINE__);                       \
 		cfprintf(stderr, format, ##__VA_ARGS__);                                                               \
 		cfprintf(stderr, "{base}%s{clear}\n", "  .^.   .^.");                                                  \
@@ -226,3 +227,7 @@ char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], cons
 char *rurima_call_jq(const char *_Nonnull argv[], const char *_Nonnull input);
 size_t rurima_split_lines(const char *_Nonnull input, char ***_Nonnull lines);
 size_t rurima_split_lines_allow_null(const char *_Nonnull input, char ***_Nonnull lines);
+void loading_animation(char *msg);
+void start_loading_animation(char *msg);
+void end_loading_animation(void);
+extern pid_t loading_animation_pid;

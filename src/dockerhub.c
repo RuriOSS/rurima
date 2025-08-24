@@ -921,6 +921,7 @@ static struct RURIMA_DOCKER *docker_pull_fallback(const char *_Nonnull image, co
 	if (len == 0) {
 		rurima_error("{red}Failed to get digest!\n");
 	}
+	end_loading_animation();
 	pull_images(image, &blobs, token, savedir, mirror, true, skip_layer);
 	free(token);
 	token = get_token(image, mirror, true);
@@ -952,6 +953,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	if (mirror == NULL) {
 		mirror = rurima_global_config.docker_mirror;
 	}
+	start_loading_animation("Fetching metadata...");
 	char *token = get_token(image, mirror, fallback);
 	char *manifests = get_tag_manifests(image, tag, token, mirror);
 	char *digest = get_tag_digest(manifests, architecture);
@@ -967,6 +969,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	if (blobs == NULL) {
 		rurima_error("{red}Failed to get blobs!\n");
 	}
+	end_loading_animation();
 	pull_images(image, blobs, token, savedir, mirror, fallback, skip_layers);
 	if (fallback) {
 		free(token);

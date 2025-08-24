@@ -28,6 +28,47 @@
  *
  */
 #include "include/rurima.h"
+void end_animation(int unused__)
+{
+	printf("\r\e[K\033[0m\033[?25h");
+	exit(0);
+}
+extern pid_t loading_animation_pid = 0;
+void start_loading_animation(char *msg)
+{
+	if (rurima_global_config.no_process) {
+		return;
+	}
+	loading_animation_pid = fork();
+	if (loading_animation_pid == 0) {
+		loading_animation(msg);
+		exit(0);
+	}
+}
+void end_loading_animation(void)
+{
+	if (loading_animation_pid > 0) {
+		kill(loading_animation_pid, SIGINT);
+		loading_animation_pid = 0;
+	}
+	waitpid(loading_animation_pid, NULL, 0);
+	fflush(stdout);
+}
+void loading_animation(char *msg)
+{
+	signal(SIGINT, end_animation);
+	printf("\033[?25l");
+	char *chr[] = { "(´･ω･`)", "( `･ω･)", "(  `･ω)", "(   `･)", "(    `)", "(`    )", "(･`   )", "(ω･`  )", "(･ω･` )", NULL };
+	int ptr = 0;
+	while (1) {
+		cprintf("\r{base}%s {blue}%s", chr[ptr], msg);
+		fflush(stdout);
+		usleep(150000);
+		ptr++;
+		if (chr[ptr] == NULL)
+			ptr = 0;
+	}
+}
 bool proot_exist(void)
 {
 	/*

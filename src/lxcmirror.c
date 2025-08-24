@@ -300,7 +300,12 @@ void rurima_lxc_pull_image(const char *_Nullable mirror, const char *_Nonnull os
 	 * and extract it to savedir.
 	 */
 	rurima_check_dir_deny_list(savedir);
+	if (architecture == NULL) {
+		architecture = rurima_lxc_get_host_arch();
+	}
+	start_loading_animation("Fetching metadata...");
 	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
+	end_loading_animation();
 	if (dir == NULL) {
 		rurima_error("{red}Image not found.\n");
 	}
