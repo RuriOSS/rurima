@@ -61,7 +61,7 @@ void loading_animation(char *msg)
 	char *chr[] = { "(´･ω･`)", "( `･ω･)", "(  `･ω)", "(   `･)", "(    `)", "(`    )", "(･`   )", "(ω･`  )", "(･ω･` )", NULL };
 	int ptr = 0;
 	while (1) {
-		cprintf("\r{base}%s {blue}%s", chr[ptr], msg);
+		cprintf("\r{base}%s {cyan}%s", chr[ptr], msg);
 		fflush(stdout);
 		usleep(150000);
 		ptr++;
