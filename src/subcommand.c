@@ -152,8 +152,8 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			}
 			tag = argv[i + 1];
 			i++;
-		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-process") == 0) {
-			rurima_global_config.no_process = true;
+		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-process") == 0 || strcmp(argv[i], "--no-progress") == 0) {
+			rurima_global_config.no_progress = true;
 		} else if (strcmp(argv[i], "-T") == 0 || strcmp(argv[i], "--try-mirrors") == 0) {
 			try_mirrors = true;
 			if (i + 1 < argc) {
@@ -342,6 +342,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		cprintf("{base}  -f, --fallback: Fallback mode.\n");
 		cprintf("{base}  -T, --try-mirrors <mirror>: Try mirrors.\n");
 		cprintf("{base}  -S, --start-at [num]: Start pulling layer at [num] when pulling image.\n");
+		cprintf("{base}  -n, --no-progress: Do not show progress.\n");
 		cprintf("\n{base}Note: please remove `https://` prefix from mirror url.\n");
 		cprintf("{base}For example: `-m registry-1.docker.io`\n");
 		cprintf("{base}You can add your perfered mirrors for `-T` option to try them first, for example: `-T hub.xdark.top -T dockerpull.org`\n");
@@ -369,8 +370,8 @@ void rurima_lxc(int argc, char **_Nonnull argv)
 			}
 			mirror = argv[i + 1];
 			i++;
-		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-process") == 0) {
-			rurima_global_config.no_process = true;
+		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-process") == 0 || strcmp(argv[i], "--no-progress") == 0) {
+			rurima_global_config.no_progress = true;
 		} else if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--os") == 0) {
 			if (i + 1 >= argc) {
 				rurima_error("{red}No os specified!\n");
@@ -451,6 +452,7 @@ void rurima_lxc(int argc, char **_Nonnull argv)
 		cprintf("{base}  -a, --arch: Architecture of image.\n");
 		cprintf("{base}  -t, --type: Type of image.\n");
 		cprintf("{base}  -s, --savedir: Save directory of image.\n");
+		cprintf("{base}  -n, --no-progress: Do not show progress.\n");
 		cprintf("\n{base}Note: please remove `https://` prefix from mirror url.\n");
 		cprintf("{base}For example: `-m images.linuxcontainers.org`\n");
 	} else {
@@ -479,7 +481,7 @@ void rurima_unpack(int argc, char **_Nonnull argv)
 			dir = argv[i + 1];
 			i++;
 		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-process") == 0) {
-			rurima_global_config.no_process = true;
+			rurima_global_config.no_progress = true;
 		} else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			cprintf("{base}Usage: rurima unpack [options]\n");
 			cprintf("{base}Options:\n");
@@ -525,7 +527,7 @@ void rurima_backup(int argc, char **_Nonnull argv)
 			dir = argv[i + 1];
 			i++;
 		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-process") == 0) {
-			rurima_global_config.no_process = true;
+			rurima_global_config.no_progress = true;
 		} else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
 			cprintf("{base}Usage: rurima backup [options]\n");
 			cprintf("{base}Options:\n");

@@ -35,7 +35,7 @@ struct RURIMA_CONFIG rurima_global_config = {
 	.lxc_mirror = "images.linuxcontainers.org",
 	.hook_script = NULL,
 	.quiet = false,
-	.no_process = false,
+	.no_progress = false,
 };
 // clang-format on
 static void show_help(void)
@@ -193,7 +193,7 @@ int main(int argc, char **argv)
 		if (strcmp(argv[i], "-q") == 0 || strcmp(argv[i], "--quiet") == 0) {
 			disable_rurima_log = true;
 			rurima_global_config.quiet = true;
-			rurima_global_config.no_process = true;
+			rurima_global_config.no_progress = true;
 			continue;
 		}
 		if (strcmp(argv[i], "docker") == 0 || strcmp(argv[i], "d") == 0) {

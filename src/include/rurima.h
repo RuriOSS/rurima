@@ -72,7 +72,7 @@ struct RURIMA_CONFIG {
 	char *_Nonnull lxc_mirror;
 	char *_Nullable hook_script;
 	bool quiet;
-	bool no_process;
+	bool no_progress;
 };
 extern struct RURIMA_CONFIG rurima_global_config;
 struct RURIMA {

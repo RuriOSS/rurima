@@ -36,7 +36,7 @@ void end_animation(int unused__)
 pid_t loading_animation_pid = 0;
 void start_loading_animation(char *msg)
 {
-	if (rurima_global_config.no_process) {
+	if (rurima_global_config.no_progress) {
 		return;
 	}
 	loading_animation_pid = fork();

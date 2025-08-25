@@ -173,7 +173,7 @@ static void show_progress(double per)
 	/*
 	 * Show progress bar.
 	 */
-	if (rurima_global_config.no_process) {
+	if (rurima_global_config.no_progress) {
 		return;
 	}
 	struct winsize size;
