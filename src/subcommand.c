@@ -684,7 +684,7 @@ void rurima_ota(void)
 		}
 	}
 	if (strcmp(commit_id_local, commit_id_remote) == 0) {
-		cprintf("{green}You are already using the latest version: %s\n", commit_id_local);
+		cprintf("{base}You are already using the latest version: {cyan}%s\n", commit_id_local);
 		free(commit_id_remote);
 		return;
 	}
@@ -719,7 +719,7 @@ void rurima_ota(void)
 	hostarch = "unknown";
 #endif
 	sprintf(URL, "https://github.com/RuriOSS/rurima/releases/latest/download/%s.tar", hostarch);
-	cprintf("{base}Downloading for {cyan}%s...\n", hostarch);
+	cprintf("{base}Downloading for {cyan}%s\n", hostarch);
 	if (rurima_download_file(URL, "rurima.tar", NULL, -1) != 0) {
 		rurima_error("{red}Failed to download new version, please check your network\n");
 	}
