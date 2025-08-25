@@ -656,3 +656,13 @@ void rurima_pull(int argc, char **_Nonnull argv)
 	}
 	rurima_error("Emmmm, I think it will never reach here.\n");
 }
+/**
+ * OTA
+ */
+void rurima_ota(void)
+{
+#ifndef RURIMA_OFFICIAL_BUILD
+	rurima_error("{red}You should remove rurima from your package manager, and use the official release to use this feature\n");
+#endif
+	return;
+}

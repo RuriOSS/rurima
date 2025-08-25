@@ -46,6 +46,7 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "release_name=$release_name" >> $GITHUB_OUTPUT
           echo "build_time=$build_time" >> $GITHUB_OUTPUT
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
   build-arch:
     runs-on: ubuntu-latest
@@ -142,6 +143,7 @@ jobs:
       - name: Move all .tar files
         run: |
           find ./all -type f -name "*.tar" -exec mv {} ./ \;
+          echo ${{ needs.update.outputs.sha_short }} > commit-id.txt
 
       - name: Release
         uses: softprops/action-gh-release@v2.2.2
@@ -157,3 +159,4 @@ jobs:
             Build time: ${{ needs.update.outputs.build_time }}
           files: |
             *.tar
+            commit-id.txt

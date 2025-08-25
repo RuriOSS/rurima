@@ -50,6 +50,10 @@ static void show_help(void)
 	cprintf("{base}  ruri, r   : Built-in ruri command.\n");
 	cprintf("{base}  help, h   : Show help message.\n");
 	cprintf("{base}  dep       : Check dependencies.\n");
+// OTA is only available in official build.
+#ifdef RURIMA_OFFICIAL_BUILD
+	cprintf("{base}  ota       : Update rurima.\n");
+#endif
 	cprintf("{base}Options:\n");
 	cprintf("{base}  -q, --quiet: Disable all unnecessary output.\n");
 	cprintf("{base}  -h, --help: Show help message.\n");
@@ -246,6 +250,10 @@ int main(int argc, char **argv)
 		if (strcmp(argv[i], "ruri") == 0 || strcmp(argv[i], "r") == 0) {
 			ruri_clear_env(argv);
 			ruri(argc - i, &argv[i]);
+			return 0;
+		}
+		if (strcmp(argv[i], "ota") == 0) {
+			rurima_ota();
 			return 0;
 		}
 		show_help();
