@@ -46,7 +46,8 @@ jobs:
           echo "version=$version" >> $GITHUB_OUTPUT
           echo "release_name=$release_name" >> $GITHUB_OUTPUT
           echo "build_time=$build_time" >> $GITHUB_OUTPUT
-          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          git clone https://github.com/rurioss/rurima
+          cd rurima;echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
   build-arch:
     runs-on: ubuntu-latest
