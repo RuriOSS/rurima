@@ -65,10 +65,14 @@ void rurima_show_version_info(void)
 // For `rurima -V`.
 void rurima_show_version_code(void)
 {
-	/*
-	 * The version code is not standard now,
-	 * so in fact it's very useless.
-	 * Maybe it can be useful one day...
-	 */
+/*
+ * The version code is not standard now,
+ * so in fact it's very useless.
+ * Maybe it can be useful one day...
+ */
+#ifdef RURIMA_OFFICIAL_BUILD
+	cprintf("%s-official\n", RURIMA_VERSION);
+#else
 	cprintf("%s\n", RURIMA_VERSION);
+#endif
 }

@@ -788,6 +788,8 @@ int main(int argc, char **argv)
 		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
 			show_help();
 			exit(0);
+		} else if (strcmp(argv[i], "--official-release") == 0 || strcmp(argv[i], "-r") == 0) {
+			check_and_add_cflag("-DRURIMA_OFFICIAL_BUILD", false);
 		} else {
 			show_help();
 			error("Error: Unknown option: %s", argv[i]);

@@ -19,10 +19,10 @@ git clone --depth 1 https://github.com/moe-hacker/rurima.git
 cd rurima
 git submodule update --init --recursive
 cc build.c -o build-rurima
-./build-rurima -s -f
+./build-rurima -s -f -r
 strip rurima
 cp rurima ../output/rurima
-./build-rurima -s -f -d
+./build-rurima -s -f -d -r
 cp rurima ../output/rurima-dbg
 cp LICENSE ../output/LICENSE
 exit 0
