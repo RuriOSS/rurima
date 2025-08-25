@@ -656,7 +656,7 @@ void rurima_pull(int argc, char **_Nonnull argv)
 	}
 	rurima_error("Emmmm, I think it will never reach here.\n");
 }
-/**
+/*
  * OTA
  */
 void rurima_ota(void)
@@ -664,5 +664,75 @@ void rurima_ota(void)
 #ifndef RURIMA_OFFICIAL_BUILD
 	rurima_error("{red}You should remove rurima from your package manager, and use the official release to use this feature\n");
 #endif
+	start_loading_animation("Fetching latest commit id...");
+#ifdef RURIMA_COMMIT_ID
+	char *commit_id_local = RURIMA_COMMIT_ID;
+#else
+	char *commit_id_local = "unknown";
+#endif
+	const char *cmd[] = { "curl", "-sL", "https://github.com/RuriOSS/rurima/releases/latest/download/commit-id.txt", NULL };
+	char *commit_id_remote = rurima_fork_execvp_get_stdout(cmd);
+	end_loading_animation();
+	if (!commit_id_remote) {
+		rurima_error("{red}Failed to get remote commit id, please check your network\n");
+	}
+	// Remove \n
+	for (int i = 0; commit_id_remote[i]; i++) {
+		if (commit_id_remote[i] == '\n') {
+			commit_id_remote[i] = 0;
+			break;
+		}
+	}
+	if (strcmp(commit_id_local, commit_id_remote) == 0) {
+		cprintf("{green}You are already using the latest version: %s\n", commit_id_local);
+		free(commit_id_remote);
+		return;
+	}
+	cprintf("{yellow}New version available: {cyan}%s{yellow}, you are using {cyan}%s{yellow}\n", commit_id_remote, commit_id_local);
+	cprintf("{yellow}Updating...\n");
+	char *tmpdir = getenv("TMPDIR");
+	if (!tmpdir)
+		tmpdir = "/tmp";
+	chdir(tmpdir);
+	// Download.
+	char URL[PATH_MAX];
+	char *hostarch = "unknown";
+	// Map hostarch。
+#if defined(__aarch64__)
+	hostarch = "aarch64";
+#elif defined(__arm__)
+	hostarch = "armhf";
+#elif defined(__armv7__)
+	hostarch = "armv7";
+#elif defined(__i386__)
+	hostarch = "i386";
+#elif defined(__loongarch64)
+	hostarch = "loongarch64";
+#elif defined(__ppc64le__)
+	hostarch = "ppc64le";
+#elif defined(__riscv) && (__riscv_xlen == 64)
+	hostarch = "riscv64";
+#elif defined(__s390x__)
+	hostarch = "s390x";
+#elif defined(__x86_64__)
+	hostarch = "x86_64";
+#else
+	hostarch = "unknown";
+#endif
+	sprintf(URL, "https://github.com/RuriOSS/rurima/releases/latest/download/%s.tar", hostarch);
+	cprintf("{base}Downloading for {cyan}%s...\n", hostarch);
+	if (rurima_download_file(URL, "rurima.tar", NULL, -1) != 0) {
+		rurima_error("{red}Failed to download new version, please check your network\n");
+	}
+	cprintf("{base}Extracting {cyan}rurima.tar...\n");
+	rurima_extract_archive("rurima.tar", ".");
+	char *self_path = realpath("/proc/self/exe", NULL);
+	if (rurima_fork_execvp((const char *const[]){ "cp", "rurima", self_path, NULL }) != 0) {
+		rurima_error("{red}Failed to replace old version, please try to run with sudo\n");
+	}
+	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima.tar", NULL });
+	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima", NULL });
+	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima-dbg", NULL });
+	rurima_fork_execvp((const char *const[]){ "rm", "-f", "LICENSE", NULL });
 	return;
 }
