@@ -724,10 +724,9 @@ void rurima_ota(void)
 	if (rurima_download_file(URL, "rurima.tar", NULL, -1) != 0) {
 		rurima_error("{red}Failed to download new version, please check your network\n");
 	}
-	cprintf("{base}Extracting {cyan}rurima.tar...\n");
 	rurima_extract_archive("rurima.tar", ".");
 	char *self_path = realpath("/proc/self/exe", NULL);
-	if (rurima_fork_execvp((const char *const[]){ "cp", "rurima", self_path, NULL }) != 0) {
+	if (rurima_fork_execvp((const char *const[]){ "cp", "-f", "rurima", self_path, NULL }) != 0) {
 		rurima_error("{red}Failed to replace old version, please try to run with sudo\n");
 	}
 	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima.tar", NULL });
