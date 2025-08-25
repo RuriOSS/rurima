@@ -688,8 +688,7 @@ void rurima_ota(void)
 		free(commit_id_remote);
 		return;
 	}
-	cprintf("{yellow}New version available: {cyan}%s{yellow}, you are using {cyan}%s{yellow}\n", commit_id_remote, commit_id_local);
-	cprintf("{yellow}Updating...\n");
+	cprintf("{base}New version available: {cyan}%s\n{base}You are using {cyan}%s\n", commit_id_remote, commit_id_local);
 	char *tmpdir = getenv("TMPDIR");
 	if (!tmpdir)
 		tmpdir = "/tmp";
