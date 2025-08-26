@@ -109,7 +109,7 @@ int fork_exec(char **argv)
 		}
 	}
 }
-char *fork_execvp_get_stdout(const char *argv[])
+char *fork_execvp_get_stdout(char *argv[])
 {
 	/*
 	 * Warning: free() after use.
