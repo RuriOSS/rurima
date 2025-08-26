@@ -64,15 +64,15 @@ static void show_help(void)
 }
 static void rurima_dep_info(void)
 {
-	const char *tar_command[] = { "tar", "--version", NULL };
-	const char *curl_command[] = { "curl", "--version", NULL };
-	const char *file_command[] = { "file", "--version", NULL };
-	const char *gz_command[] = { "gzip", "--version", NULL };
-	const char *xz_command[] = { "xz", "-V", NULL };
-	const char *file_command_2[] = { "file", "--brief", "--mime-type", "/proc/self/exe", NULL };
-	const char *proot_command[] = { "proot", "-V", NULL };
-	const char *sha256_command[] = { "sha256sum", "--version", NULL };
-	const char *jq_command[] = { "jq", "--version", NULL };
+	char *tar_command[] = { "tar", "--version", NULL };
+	char *curl_command[] = { "curl", "--version", NULL };
+	char *file_command[] = { "file", "--version", NULL };
+	char *gz_command[] = { "gzip", "--version", NULL };
+	char *xz_command[] = { "xz", "-V", NULL };
+	char *file_command_2[] = { "file", "--brief", "--mime-type", "/proc/self/exe", NULL };
+	char *proot_command[] = { "proot", "-V", NULL };
+	char *sha256_command[] = { "sha256sum", "--version", NULL };
+	char *jq_command[] = { "jq", "--version", NULL };
 	char *result = NULL;
 	result = rurima_fork_execvp_get_stdout(tar_command);
 	if (result == NULL) {

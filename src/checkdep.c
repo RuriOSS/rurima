@@ -38,12 +38,12 @@ void rurima_check_dep(void)
 	 * So we will not check it here.
 	 *
 	 */
-	const char *tar_command[] = { "tar", "--version", NULL };
-	const char *curl_command[] = { "curl", "--version", NULL };
-	const char *file_command[] = { "file", "--version", NULL };
-	const char *gz_command[] = { "gzip", "--version", NULL };
-	const char *xz_command[] = { "xz", "-V", NULL };
-	const char *file_command_2[] = { "file", "--brief", "--mime-type", "/proc/self/exe", NULL };
+	char *tar_command[] = { "tar", "--version", NULL };
+	char *curl_command[] = { "curl", "--version", NULL };
+	char *file_command[] = { "file", "--version", NULL };
+	char *gz_command[] = { "gzip", "--version", NULL };
+	char *xz_command[] = { "xz", "-V", NULL };
+	char *file_command_2[] = { "file", "--brief", "--mime-type", "/proc/self/exe", NULL };
 	char *result = NULL;
 	result = rurima_fork_execvp_get_stdout(tar_command);
 	if (result == NULL) {

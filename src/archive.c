@@ -34,7 +34,7 @@ static bool proot_support_link2symlink(void)
 	 * Test if proot support link2symlink.
 	 * We use proot to execute ls, so that we can check if proot is really available.
 	 */
-	const char *cmd[] = { "proot", "--link2symlink", "ls", NULL };
+	char *cmd[] = { "proot", "--link2symlink", "ls", NULL };
 	char *ret = rurima_fork_execvp_get_stdout(cmd);
 	if (ret == NULL) {
 		rurima_log("{red}proot not support --link2symlink.\n");
@@ -44,7 +44,7 @@ static bool proot_support_link2symlink(void)
 	rurima_log("{green}proot support --link2symlink.\n");
 	return true;
 }
-static char **get_extract_command(const char *_Nonnull file, const char *_Nonnull dir)
+static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 {
 	/*
 	 * Warning: free() after use.
@@ -58,7 +58,7 @@ static char **get_extract_command(const char *_Nonnull file, const char *_Nonnul
 	 * we will use proot to extract the archive.
 	 */
 	char **ret = malloc(sizeof(char *) * 14);
-	const char *file_command[] = { "file", "--brief", "--mime-type", file, NULL };
+	char *file_command[] = { "file", "--brief", "--mime-type", file, NULL };
 	char *type = rurima_fork_execvp_get_stdout(file_command);
 	if (type == NULL) {
 		rurima_error("{red}Failed to get file type!\n");
@@ -192,7 +192,7 @@ static void show_progress(double per)
 	fflush(stdout);
 	printf("\033[?25h");
 }
-int rurima_extract_archive(const char *_Nonnull file, const char *_Nonnull dir)
+int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir)
 {
 	/*
 	 * Extract the archive.
@@ -292,11 +292,11 @@ static int tar_backup__(const char *_Nonnull file, const char *_Nonnull dir)
 		sprintf(exclude, "--exclude=%s", file_realpath);
 		char exclude2[PATH_MAX + 12] = { '\0' };
 		sprintf(exclude2, "--exclude=%s", file);
-		const char *command[] = { "tar", exclude, exclude2, "-cpf", file_realpath, ".", NULL };
+		char *command[] = { "tar", exclude, exclude2, "-cpf", file_realpath, ".", NULL };
 		ret = rurima_fork_execvp(command);
 	} else {
 		chdir(dir);
-		const char *command[] = { "tar", "-cpf", file_realpath, ".", NULL };
+		char *command[] = { "tar", "-cpf", file_realpath, ".", NULL };
 		ret = rurima_fork_execvp(command);
 	}
 	close(nullfd);
@@ -306,7 +306,7 @@ static int tar_backup__(const char *_Nonnull file, const char *_Nonnull dir)
 }
 static bool du_found(void)
 {
-	const char *command[] = { "du", "--version", NULL };
+	char *command[] = { "du", "--version", NULL };
 	char *ret = rurima_fork_execvp_get_stdout(command);
 	if (ret == NULL) {
 		rurima_log("{red}du not found.\n");
@@ -316,7 +316,7 @@ static bool du_found(void)
 	rurima_log("{green}du found.\n");
 	return true;
 }
-int rurima_backup_dir(const char *_Nonnull file, const char *_Nonnull dir)
+int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir)
 {
 	/*
 	 * Backup container as *.tar file.
@@ -373,24 +373,24 @@ int rurima_backup_dir(const char *_Nonnull file, const char *_Nonnull dir)
 	}
 	return 0;
 }
-static int download_file__(const char *_Nonnull url, const char *_Nonnull file, const char *_Nullable token)
+static int download_file__(char *_Nonnull url, char *_Nonnull file, char *_Nullable token)
 {
 	int status = 0;
 	if (token != NULL) {
-		const char *command[] = { "curl", "-sL", "-o", file, "-H", token, url, NULL };
+		char *command[] = { "curl", "-sL", "-o", file, "-H", token, url, NULL };
 		status = rurima_fork_execvp(command);
 	} else {
-		const char *command[] = { "curl", "-sL", "-o", file, url, NULL };
+		char *command[] = { "curl", "-sL", "-o", file, url, NULL };
 		status = rurima_fork_execvp(command);
 	}
 	return status;
 }
-static ssize_t get_url_file_size__(const char *_Nonnull url)
+static ssize_t get_url_file_size__(char *_Nonnull url)
 {
 	/*
 	 * Get the file size from the URL.
 	 */
-	const char *command[] = { "curl", "-sIL", url, NULL };
+	char *command[] = { "curl", "-sIL", url, NULL };
 	char *ret = rurima_fork_execvp_get_stdout(command);
 	if (ret == NULL) {
 		rurima_error("{red}Failed to get file size!\n");
@@ -420,7 +420,7 @@ static ssize_t get_url_file_size__(const char *_Nonnull url)
 	rurima_log("{base}Get file size: {green}%ld\n", filesize);
 	return filesize;
 }
-int rurima_download_file(const char *_Nonnull url, const char *_Nonnull file, const char *_Nullable token, ssize_t size)
+int rurima_download_file(char *_Nonnull url, char *_Nonnull file, char *_Nullable token, ssize_t size)
 {
 	/*
 	 * Download file from the specified URL.

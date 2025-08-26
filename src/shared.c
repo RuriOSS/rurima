@@ -30,7 +30,7 @@
 #include "include/rurima.h"
 void end_animation(int unused__)
 {
-	printf("\r\e[K\033[0m\033[?25h");
+	printf("\r\033[K\033[0m\033[?25h");
 	exit(0);
 }
 pid_t loading_animation_pid = 0;
@@ -75,7 +75,7 @@ bool proot_exist(void)
 	 * Test if proot exist.
 	 * We use proot to execute ls, so that we can check if proot is really available.
 	 */
-	const char *cmd[] = { "proot", "ls", NULL };
+	char *cmd[] = { "proot", "ls", NULL };
 	char *ret = rurima_fork_execvp_get_stdout(cmd);
 	if (ret == NULL) {
 		rurima_log("{red}proot not found.\n");
@@ -489,12 +489,12 @@ bool rurima_rootless_supported(void)
 	}
 	return false;
 }
-off_t rurima_get_dir_file_size(const char *_Nonnull target)
+off_t rurima_get_dir_file_size(char *_Nonnull target)
 {
 	/*
 	 * Get the size of the directory or file.
 	 */
-	const char *command[] = { "du", "-s", target, NULL };
+	char *command[] = { "du", "-s", target, NULL };
 	char *result = rurima_fork_execvp_get_stdout_ignore_err(command);
 	if (result == NULL) {
 		return 0;
@@ -508,7 +508,7 @@ bool rurima_sha256sum_exists(void)
 	/*
 	 * Check if sha256sum exists.
 	 */
-	const char *command[] = { "sha256sum", "-v", NULL };
+	char *command[] = { "sha256sum", "-v", NULL };
 	char *result = rurima_fork_execvp_get_stdout_ignore_err(command);
 	if (result == NULL) {
 		return false;
@@ -521,7 +521,7 @@ bool rurima_jq_exists(void)
 	/*
 	 * Check if jq exists.
 	 */
-	const char *command[] = { "jq", "--version", NULL };
+	char *command[] = { "jq", "--version", NULL };
 	char *result = rurima_fork_execvp_get_stdout(command);
 	if (result == NULL) {
 		return false;

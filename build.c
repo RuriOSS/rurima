@@ -341,7 +341,7 @@ void init_env(void)
 	}
 	pprintf("CC: %s\n", CC);
 	free_args(arg);
-	char *commit_id = fork_execvp_get_stdout((const char *[]){ "git", "-C", "..", "rev-parse", "--short", "HEAD", NULL });
+	char *commit_id = fork_execvp_get_stdout((char *[]){ "git", "-C", "..", "rev-parse", "--short", "HEAD", NULL });
 	if (commit_id) {
 		if (commit_id[strlen(commit_id) - 1] == '\n') {
 			commit_id[strlen(commit_id) - 1] = '\0';
@@ -351,7 +351,7 @@ void init_env(void)
 		pprintf("Warning: failed to get commit ID\n");
 	}
 	COMMIT_ID = commit_id;
-	char *ruri_commit_id = fork_execvp_get_stdout((const char *[]){ "git", "-C", "../src/ruri", "rev-parse", "--short", "HEAD", NULL });
+	char *ruri_commit_id = fork_execvp_get_stdout((char *[]){ "git", "-C", "../src/ruri", "rev-parse", "--short", "HEAD", NULL });
 	if (ruri_commit_id) {
 		if (ruri_commit_id[strlen(ruri_commit_id) - 1] == '\n') {
 			ruri_commit_id[strlen(ruri_commit_id) - 1] = '\0';

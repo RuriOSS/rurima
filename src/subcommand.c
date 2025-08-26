@@ -670,7 +670,7 @@ void rurima_ota(void)
 #else
 	char *commit_id_local = "unknown";
 #endif
-	const char *cmd[] = { "curl", "-sL", "https://github.com/RuriOSS/rurima/releases/latest/download/commit-id.txt", NULL };
+	char *cmd[] = { "curl", "-sL", "https://github.com/RuriOSS/rurima/releases/latest/download/commit-id.txt", NULL };
 	char *commit_id_remote = rurima_fork_execvp_get_stdout(cmd);
 	end_loading_animation();
 	if (!commit_id_remote) {
@@ -725,12 +725,12 @@ void rurima_ota(void)
 	}
 	rurima_extract_archive("rurima.tar", ".");
 	char *self_path = realpath("/proc/self/exe", NULL);
-	if (rurima_fork_execvp((const char *const[]){ "cp", "-f", "rurima", self_path, NULL }) != 0) {
+	if (rurima_fork_execvp((char *[]){ "cp", "-f", "rurima", self_path, NULL }) != 0) {
 		rurima_error("{red}Failed to replace old version, please try to run with sudo\n");
 	}
-	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima.tar", NULL });
-	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima", NULL });
-	rurima_fork_execvp((const char *const[]){ "rm", "-f", "rurima-dbg", NULL });
-	rurima_fork_execvp((const char *const[]){ "rm", "-f", "LICENSE", NULL });
+	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima.tar", NULL });
+	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima", NULL });
+	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima-dbg", NULL });
+	rurima_fork_execvp((char *[]){ "rm", "-f", "LICENSE", NULL });
 	return;
 }

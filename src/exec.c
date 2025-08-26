@@ -50,7 +50,7 @@ static size_t get_max_pipe_size(void)
 	rurima_log("{base}Maximum pipe size: {green}%zu{base} bytes\n", max_size);
 	return max_size;
 }
-int rurima_fork_execvp(const char *_Nonnull argv[])
+int rurima_fork_execvp(char *_Nonnull argv[])
 {
 	/*
 	 * fork(2) and then execvp(3).
@@ -61,7 +61,7 @@ int rurima_fork_execvp(const char *_Nonnull argv[])
 	}
 	int pid = fork();
 	if (pid == 0) {
-		execvp(argv[0], (char **)argv);
+		execvp(argv[0], argv);
 		// If execvp(3) failed, exit as error status 114.
 		exit(114);
 	}
@@ -69,7 +69,7 @@ int rurima_fork_execvp(const char *_Nonnull argv[])
 	waitpid(pid, &status, 0);
 	return WEXITSTATUS(status);
 }
-char *rurima_fork_execvp_get_stdout_ignore_err(const char *_Nonnull argv[])
+char *rurima_fork_execvp_get_stdout_ignore_err(char *_Nonnull argv[])
 {
 	/*
 	 * Warning: free() after use.
@@ -132,7 +132,7 @@ char *rurima_fork_execvp_get_stdout_ignore_err(const char *_Nonnull argv[])
 	}
 	return NULL;
 }
-char *rurima_fork_execvp_get_stdout(const char *_Nonnull argv[])
+char *rurima_fork_execvp_get_stdout(char *_Nonnull argv[])
 {
 	/*
 	 * Warning: free() after use.
@@ -241,7 +241,7 @@ int rurima_fork_rexec(char **_Nonnull argv)
 	waitpid(pid, &status, 0);
 	return WEXITSTATUS(status);
 }
-char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], const char *_Nonnull input)
+char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], char *_Nonnull input)
 {
 	/*
 	 * Warning: free() after use.
@@ -330,7 +330,7 @@ char *rurima_fork_execvp_get_stdout_with_input(const char *_Nonnull argv[], cons
 	}
 	return NULL;
 }
-char *rurima_call_jq(const char *_Nonnull argv[], const char *_Nonnull input)
+char *rurima_call_jq(char *_Nonnull argv[], char *_Nonnull input)
 {
 	/*
 	 * Call jq with input.
