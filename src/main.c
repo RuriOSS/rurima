@@ -33,7 +33,6 @@ bool disable_rurima_log = false;
 struct RURIMA_CONFIG rurima_global_config = {
 	.docker_mirror = "registry-1.docker.io",
 	.lxc_mirror = "images.linuxcontainers.org",
-	.hook_script = NULL,
 	.quiet = false,
 	.no_progress = false,
 };
@@ -184,7 +183,6 @@ int main(int argc, char **argv)
 		return ruri(argc, argv);
 	}
 	detect_suid_or_capability();
-	rurima_read_global_config();
 #ifdef RURIMA_DEV
 	rurima_warning("{red}You are using dev/debug build, if you think this is wrong, please rebuild rurima or get it from release page.\n");
 #endif

@@ -70,42 +70,10 @@
 struct RURIMA_CONFIG {
 	char *_Nonnull docker_mirror;
 	char *_Nonnull lxc_mirror;
-	char *_Nullable hook_script;
 	bool quiet;
 	bool no_progress;
 };
 extern struct RURIMA_CONFIG rurima_global_config;
-struct RURIMA {
-	/*
-	 * This is full rurima config.
-	 */
-	// rootfs source: docker, lxc, rootfs or hostdir.
-	char *_Nonnull rootfs_source;
-	// For docker.
-	char *_Nullable rootfs_image;
-	// For docker.
-	char *_Nullable rootfs_tag;
-	// For docker/lxc.
-	char *_Nullable rootfs_arch;
-	// For lxc.
-	char *_Nullable rootfs_mirror;
-	// For lxc.
-	char *_Nullable rootfs_os;
-	// For lxc.
-	char *_Nullable rootfs_version;
-	// For lxc.
-	char *_Nullable rootfs_type;
-	// For rootfs.
-	char *_Nullable rootfs_path;
-	// For rootfs.
-	char *_Nullable host_dir;
-	// Hook script, will be copied into /tmp.
-	char *_Nullable hook_script;
-	// Hook command.
-	char *_Nullable hook_command[RURI_MAX_COMMANDS + 1];
-	// Full ruri container config.
-	struct RURI_CONTAINER container;
-};
 struct RURIMA_DOCKER {
 	/*
 	 * This is part of docker config that we need.
@@ -181,7 +149,6 @@ int rurima_fork_execvp(char *_Nonnull argv[]);
 char *rurima_fork_execvp_get_stdout(char *_Nonnull argv[]);
 int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir);
 off_t rurima_get_file_size(const char *_Nonnull file);
-char *rurima_get_prefix(void);
 int rurima_mkdirs(const char *_Nonnull path, mode_t mode);
 bool rurima_run_with_root(void);
 int rurima_docker_search(const char *_Nonnull image, const char *_Nonnull page_size, bool quiet, const char *_Nullable mirror);
@@ -196,7 +163,6 @@ void rurima_lxc_search_image(const char *_Nullable mirror, const char *_Nonnull 
 void rurima_docker(int argc, char **_Nonnull argv);
 void rurima_lxc(int argc, char **_Nonnull argv);
 void rurima_unpack(int argc, char **_Nonnull argv);
-struct RURIMA *rurima_init_config(void);
 void rurima_get_input(char *_Nonnull message, char *_Nonnull buf);
 void rurima_check_dep(void);
 struct RURIMA_DOCKER *rurima_get_docker_config(char *_Nonnull image, char *_Nonnull tag, char *_Nullable architecture, char *_Nullable mirror, bool fallback);
@@ -210,8 +176,6 @@ void rurima_check_dir_deny_list(const char *_Nonnull dir);
 char *rurima_strstr_ignore_case(const char *_Nonnull haystack, const char *_Nonnull needle);
 int rurima_fork_rexec(char **_Nonnull argv);
 void rurima_add_argv(char ***_Nonnull argv, char *_Nonnull arg);
-void *rurima_default_hook(const char *_Nonnull container_dir);
-void rurima_read_global_config(void);
 bool rurima_rootless_supported(void);
 off_t rurima_get_dir_file_size(char *_Nonnull target);
 int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir);

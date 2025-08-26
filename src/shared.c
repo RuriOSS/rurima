@@ -201,17 +201,6 @@ off_t rurima_get_file_size(const char *_Nonnull file)
 	rurima_log("{base}File size: {green}%ld\n", st.st_size);
 	return st.st_size;
 }
-char *rurima_get_prefix(void)
-{
-	/*
-	 * Warning: free() the return value after use.
-	 */
-	char *ret = getenv("PREFIX");
-	if (ret == NULL) {
-		ret = strdup("/");
-	}
-	return ret;
-}
 int rurima_mkdirs(const char *_Nonnull path, mode_t mode)
 {
 	/*
