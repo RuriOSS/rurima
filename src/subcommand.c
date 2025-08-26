@@ -734,3 +734,29 @@ void rurima_ota(void)
 	rurima_fork_execvp((char *[]){ "rm", "-f", "LICENSE", NULL });
 	return;
 }
+/*
+ * run
+ */
+void rurima_run(int argc, char **_Nonnull argv)
+{
+	if (argc == 0) {
+		cprintf("Usage: \n");
+		cprintf("  rurima run <image:tag> <bundle_path>\n");
+		cprintf("  rurima run <bundle_path>\n");
+		return;
+	}
+	if (argc == 1) {
+		chdir(argv[0]);
+		ruri(2, (char *[]){ "ruri", "./rootfs", NULL });
+		exit(0);
+	} else {
+		if (access(argv[1], F_OK) == 0) {
+			rurima_error("{red}%s already exists!\n", argv[1]);
+		}
+		rurima_mkdirs(argv[1], 0755);
+		chdir(argv[1]);
+		rurima_fork_rexec((char *[]){ "pull", argv[0], "./rootfs", NULL });
+		ruri(2, (char *[]){ "ruri", "./rootfs", NULL });
+		exit(0);
+	}
+}

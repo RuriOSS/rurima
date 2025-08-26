@@ -196,3 +196,4 @@ void start_loading_animation(char *msg);
 void end_loading_animation(void);
 extern pid_t loading_animation_pid;
 void rurima_ota(void);
+void rurima_run(int argc, char **_Nonnull argv);
