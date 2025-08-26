@@ -351,13 +351,6 @@ int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir)
 		while (waitpid(pid, &status, WNOHANG) == 0) {
 			off_t currentsize = rurima_get_file_size(file);
 			totalsize = totalsize_bk;
-			while (totalsize > (int)FLT_MAX) {
-				totalsize = totalsize / 1024;
-				currentsize = currentsize / 1024;
-				if (totalsize < (int)FLT_MAX) {
-					break;
-				}
-			}
 			double progress = ((double)currentsize / (double)totalsize);
 			if (progress > 1.0) {
 				progress = 1.0;
@@ -447,13 +440,6 @@ int rurima_download_file(char *_Nonnull url, char *_Nonnull file, char *_Nullabl
 		while (waitpid(pid, &status, WNOHANG) == 0) {
 			off_t currentsize = rurima_get_file_size(file);
 			size = size_bk;
-			while (size > (int)FLT_MAX) {
-				size = size / 1024;
-				currentsize = currentsize / 1024;
-				if (size < (int)FLT_MAX) {
-					break;
-				}
-			}
 			double progress = ((double)currentsize / (double)size);
 			if (progress > 1.0) {
 				progress = 1.0;
