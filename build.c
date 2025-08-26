@@ -744,7 +744,7 @@ void dev_cflags(void)
 	check_and_add_cflag("-Wconversion", false);
 	check_and_add_cflag("-Wno-newline-eof", false);
 	check_and_add_cflag("-Wno-gnu-zero-variadic-macro-arguments", false);
-	check_and_add_cflag("-fsanitize=address", false);
+	check_and_add_cflag("-fsanitize=address,undefined", false);
 	check_and_add_cflag("-Wl,--build-id=sha1", false);
 	check_and_add_cflag("-ffunction-sections", false);
 	check_and_add_cflag("-fdata-sections", false);
