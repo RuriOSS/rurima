@@ -5,7 +5,17 @@
 
 ![](https://img.shields.io/badge/Powered%20By-GNU%20C-00d000?style=flat&labelColor=gray&logo=C)
 
-
+# About:
+So, what is rurima?       
+The enhanced version of ruri.          
+ruri only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
+And it will be a more powerful container manager in the fulture.            
+With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
+# Not Only Ruri Container Manager:
+Rurima was planned to be the ruri container manager, but as rurima has a full integration of ruri now, you can just use it as a more powerful version of ruri, although the container manager function is still WIP.               
+For more info about ruri, see [ruri](https://github.com/Moe-hacker/ruri)      
+# Note & WIP:
+This project does not follow OCI and can only be a `PARTIAL` replacement of docker, this project is still under development.       
 # Terms of Use:
 See [TERMS_OF_USE.md](TERMS_OF_USE.md)
 # For Android user:
@@ -23,17 +33,6 @@ And, we are working for the migration from daijin, so rurima will fully replace 
 * Docker is a registered trademark of Docker, Inc. This program has no relationship with it.
 * This program has no Super Cow Powers.
 ```
-# About:
-So, what is rurima?       
-The enhanced version of ruri.          
-ruri only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
-And it will be a more powerful container manager in the fulture.            
-With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
-# Not Only Ruri Container Manager:
-Rurima was planned to be the ruri container manager, but as rurima has a full integration of ruri now, you can just use it as a more powerful version of ruri, although the container manager function is still WIP.               
-For more info about ruri, see [ruri](https://github.com/Moe-hacker/ruri)      
-# Note & WIP:
-This project does not follow OCI and can only be a `PARTIAL` replacement of docker, this project is still under development.       
 # Download:
 You can get rurima binary (staticly linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 from the release page.     
 Or run the follwing command to get rurima to ./rurima and ./rurima-dbg(debug version):     
