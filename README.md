@@ -13,11 +13,7 @@ You might need to root your phone before using rurima, some container might not 
 
 # What's new:
 You can use `rurima ota` to update rurima automatically now.      
-And, we are working for the migration from daijin, so rurima will fully replace it in the future.    
-# WARNING:
-For production, I fully recommand you to use tools like [crun](https://github.com/containers/crun), [youki](https://github.com/youki-dev/youki), [containerd](https://containerd.io/), [docker](https://www.docker.com/), [podman](https://podman.io/), [LXC](https://linuxcontainers.org/), [bubblewrap](https://github.com/containers/bubblewrap), they are more secure and stable. This is a non-OCI tool and, you take your own risk using it when you really need. The whole project is experimental!        
-# NOTE:
-rurima now use [jq](https://github.com/jqlang) for dockerhub support.      
+And, we are working for the migration from daijin, so rurima will fully replace it in the future.      
 # WARNING:      
 ```
 * Your warranty is void.
