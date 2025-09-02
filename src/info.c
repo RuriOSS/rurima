@@ -43,8 +43,8 @@ void rurima_show_version_info(void)
 	cprintf("{base}      ●   ●  ●●●  ●   ●  ●●●  ●   ● ●   ●\n");
 	cprintf("{base}        Licensed under the MIT License\n");
 	cprintf("{base}          <https://mit-license.org>\n");
-	cprintf("{base}        Copyright (C) 2024 Moe-hacker\n\n");
-	cprintf("{base}%s%s%s", "rurima version ..................:  ", RURIMA_VERSION, "\n");
+	cprintf("{base}      Copyright (C) 2024-2025 Moe-hacker\n\n");
+	cprintf("{base}%s%d.%d.%d%s", "rurima version ..................:  ", RURIMA_VERSION_MAJOR, RURIMA_VERSION_MINOR, RURIMA_VERSION_PATCH, "\n");
 #if defined(RURIMA_COMMIT_ID)
 	cprintf("{base}%s%s%s", "rurima commit id ................:  ", RURIMA_COMMIT_ID, "\n");
 #endif
@@ -71,8 +71,8 @@ void rurima_show_version_code(void)
  * Maybe it can be useful one day...
  */
 #ifdef RURIMA_OFFICIAL_BUILD
-	cprintf("%s-official\n", RURIMA_VERSION);
+	cprintf("%d.%d.%d-official\n", RURIMA_VERSION_MAJOR, RURIMA_VERSION_MINOR, RURIMA_VERSION_PATCH);
 #else
-	cprintf("%s\n", RURIMA_VERSION);
+	cprintf("%d.%d.%d\n", RURIMA_VERSION_MAJOR, RURIMA_VERSION_MINOR, RURIMA_VERSION_PATCH);
 #endif
 }

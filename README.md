@@ -5,26 +5,26 @@
 [![Build release](https://github.com/RuriOSS/rurima/actions/workflows/build.yml/badge.svg)](https://github.com/RuriOSS/rurima/actions/workflows/build.yml)
 
 ![](https://img.shields.io/badge/Powered%20By-GNU%20C-00d000?style=flat&labelColor=gray&logo=C)
-
+# The first release:
+v0.9.0 is the first release of rurima, some feature are still WIP, but it is already usable as the extended version of ruri.      
 # About:
 So, what is rurima?       
 The enhanced version of ruri.          
 ruri only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
 And it will be a more powerful container manager in the fulture.            
 With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
-# Not Only Ruri Container Manager:
+## Not Only Ruri Container Manager:
 Rurima was planned to be the ruri container manager, but as rurima has a full integration of ruri now, you can just use it as a more powerful version of ruri, although the container manager function is still WIP.               
 For more info about ruri, see [ruri](https://github.com/Moe-hacker/ruri)      
-# Note & WIP:
+## Note & WIP:
 This project does not follow OCI and can only be a `PARTIAL` replacement of docker, this project is still under development.       
-# Terms of Use:
+## Terms of Use:
 See [TERMS_OF_USE.md](TERMS_OF_USE.md)
-# For Android user:
+## For Android user:
 You might need to root your phone before using rurima, some container might not work properly with proot.  
-
-# What's new:
-You can use `rurima ota` to update rurima automatically now.      
-And, we are working for the migration from daijin, so rurima will fully replace it in the future.      
+# Full usage doc:
+For a full usage documentation,    
+See [USAGE.md](doc/USAGE.md)
 # WARNING:      
 ```
 * Your warranty is void.
@@ -53,48 +53,6 @@ rurima pull whyour/qinglong ./test
 rurima pull ubuntu ./test
 ```
 It will search lxc image first, if not found, it will auto try to pull rootfs from dockerhub.      
-# Example usage of docker subcommand:
-Get `alpine` image, use tag `edge`, save to `./test`     
-```sh
-rurima docker pull -i alpine -t edge -s ./test
-```     
-Get `whyour/qinglong` docker image.      
-```sh
-rurima docker pull -i whyour/qinglong -s ./test
-```
-Get `ubuntu` docker image.      
-```sh
-rurima docker pull -i ubuntu -s ./test
-```
-Search for image `ubuntu`:      
-```sh
-rurima docker search -i ubuntu
-```
-Search tag for `ubuntu`:      
-```sh
-rurima docker tag -i ubuntu
-```
-Use docker mirror `dockerpull.org`
-```sh
-rurima docker pull -m dockerpull.org -i ubuntu -s ./test
-```
-Try every mirrorlist:      
-```sh
-rurima docker pull -T -i ubuntu -s ./test
-```
-Try fallback mode:      
-```sh
-rurima docker pull -T -f -i ubuntu -s ./test
-```
-# Example usage of lxc subcommand:
-Pull `alpine` version `edge`.      
-```sh
-rurima lxc pull -o alpine -v edge -s ./test
-```
-Use `mirrors.bfsu.edu.cn/lxc-images` as mirror:   
-```sh
-rurima lxc pull -m mirrors.bfsu.edu.cn/lxc-images -o alpine -v edge -s ./test
-```    
 # About suid or caps:
 Rurima does not allow to set any suid/sgid (with root) or capability on it, it will check it in main() and error() if detected these unsafe settings.      
 So, please always use sudo instead.     
@@ -130,20 +88,6 @@ and finally, tar -xvf *.apk to unpack it. So you got proot.static, rename it to 
 Manage ruri containers and configs.   
 Config support, a bit like Dockerfile.   
 ....
-# Usage:
-```
-Usage: rurima [subcommand] [options]
-Subcommands:
-  docker: DockerHub support.
-  lxc: LXC mirror support.
-  pull: Pull rootfs.
-  unpack: Unpack rootfs.
-  backup: Backup rootfs.
-  ruri: Built-in ruri command.
-  help: Show help message.
-Options:
-  -h, --help: Show help message.
-```
 ---------
 
 <p align="center">「僕らタイムフライヤー</p>

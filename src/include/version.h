@@ -29,5 +29,8 @@
  *
  */
 // Version info.
-#define RURIMA_VERSION "0.1-unreleased"
+#define RURIMA_VERSION "0.9"
+#define RURIMA_VERSION_MAJOR 0
+#define RURIMA_VERSION_MINOR 9
+#define RURIMA_VERSION_PATCH 0
 #include "../ruri/src/include/version.h"
