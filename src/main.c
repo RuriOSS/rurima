@@ -258,6 +258,10 @@ int main(int argc, char **argv)
 			rurima_run(argc - i - 1, &argv[i + 1]);
 			return 0;
 		}
+		if (strcmp(argv[i], "netns") == 0) {
+			rurima_netns_wrapper(argc - i - 1, &argv[i + 1]);
+			return 0;
+		}
 		show_help();
 		rurima_error("{red}Invalid subcommand `%s`!\n", argv[i]);
 		return 1;
