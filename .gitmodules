@@ -1,3 +1,6 @@
 [submodule "src/ruri"]
 	path = src/ruri
 	url = https://github.com/Moe-hacker/ruri
+[submodule "src/catsh"]
+	path = src/catsh
+	url = git@github.com:rurioss/catsh
