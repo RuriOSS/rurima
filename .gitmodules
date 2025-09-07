@@ -3,4 +3,4 @@
 	url = https://github.com/Moe-hacker/ruri
 [submodule "src/catsh"]
 	path = src/catsh
-	url = git@github.com:rurioss/catsh
+	url = https://github.com/rurioss/catsh
