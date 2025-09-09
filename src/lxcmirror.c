@@ -274,6 +274,7 @@ bool rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os
 	 *
 	 * Return: true if available, false if not.
 	 */
+	start_loading_animation("Fetching metadata...");
 	if (architecture == NULL) {
 		architecture = rurima_lxc_get_host_arch();
 	}
@@ -287,6 +288,7 @@ bool rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os
 		architecture = rurima_lxc_get_host_arch();
 	}
 	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
+	end_loading_animation();
 	if (dir == NULL) {
 		return false;
 	}
