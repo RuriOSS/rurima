@@ -971,6 +971,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	}
 	end_loading_animation();
 	pull_images(image, blobs, token, savedir, mirror, fallback, skip_layers);
+	start_loading_animation("Fetching config metadata...");
 	if (fallback) {
 		free(token);
 		token = get_token(image, mirror, true);
@@ -991,6 +992,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	free(blobs->blobs);
 	free(blobs);
 	free(config);
+	end_loading_animation();
 	return ret;
 }
 static char *docker_search__(char *_Nonnull url)
