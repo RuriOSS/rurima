@@ -58,6 +58,7 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 	 * we will use proot to extract the archive.
 	 */
 	char **ret = malloc(sizeof(char *) * 14);
+	ret[0] = NULL;
 	char *file_command[] = { "file", "--brief", "--mime-type", file, NULL };
 	char *type = rurima_fork_execvp_get_stdout(file_command);
 	if (type == NULL) {
@@ -69,35 +70,32 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 	if (!rurima_run_with_root() && proot_exist()) {
 		if (proot_support_link2symlink()) {
 			if (strcmp(type, "application/gzip") == 0) {
-				ret[0] = "proot";
-				ret[1] = "-0";
-				ret[2] = "--link2symlink";
-				ret[3] = "tar";
-				ret[4] = "-xpzf";
-				ret[5] = "-";
-				ret[6] = "-C";
-				ret[7] = (char *)dir;
-				ret[8] = NULL;
+				rurima_add_argv(&ret, "proot");
+				rurima_add_argv(&ret, "-0");
+				rurima_add_argv(&ret, "--link2symlink");
+				rurima_add_argv(&ret, "tar");
+				rurima_add_argv(&ret, "-xpzf");
+				rurima_add_argv(&ret, "-");
+				rurima_add_argv(&ret, "-C");
+				rurima_add_argv(&ret, (char *)dir);
 			} else if (strcmp(type, "application/x-xz") == 0) {
-				ret[0] = "proot";
-				ret[1] = "-0";
-				ret[2] = "--link2symlink";
-				ret[3] = "tar";
-				ret[4] = "-xpJf";
-				ret[5] = "-";
-				ret[6] = "-C";
-				ret[7] = (char *)dir;
-				ret[8] = NULL;
+				rurima_add_argv(&ret, "proot");
+				rurima_add_argv(&ret, "-0");
+				rurima_add_argv(&ret, "--link2symlink");
+				rurima_add_argv(&ret, "tar");
+				rurima_add_argv(&ret, "-xpJf");
+				rurima_add_argv(&ret, "-");
+				rurima_add_argv(&ret, "-C");
+				rurima_add_argv(&ret, (char *)dir);
 			} else if (strcmp(type, "application/x-tar") == 0) {
-				ret[0] = "proot";
-				ret[1] = "-0";
-				ret[2] = "--link2symlink";
-				ret[3] = "tar";
-				ret[4] = "-xpf";
-				ret[5] = "-";
-				ret[6] = "-C";
-				ret[7] = (char *)dir;
-				ret[8] = NULL;
+				rurima_add_argv(&ret, "proot");
+				rurima_add_argv(&ret, "-0");
+				rurima_add_argv(&ret, "--link2symlink");
+				rurima_add_argv(&ret, "tar");
+				rurima_add_argv(&ret, "-xpf");
+				rurima_add_argv(&ret, "-");
+				rurima_add_argv(&ret, "-C");
+				rurima_add_argv(&ret, (char *)dir);
 			} else {
 				free(type);
 				free(ret);
@@ -105,32 +103,29 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 			}
 		} else {
 			if (strcmp(type, "application/gzip") == 0) {
-				ret[0] = "proot";
-				ret[1] = "-0";
-				ret[2] = "tar";
-				ret[3] = "-xpzf";
-				ret[4] = "-";
-				ret[5] = "-C";
-				ret[6] = (char *)dir;
-				ret[7] = NULL;
+				rurima_add_argv(&ret, "proot");
+				rurima_add_argv(&ret, "-0");
+				rurima_add_argv(&ret, "tar");
+				rurima_add_argv(&ret, "-xpzf");
+				rurima_add_argv(&ret, "-");
+				rurima_add_argv(&ret, "-C");
+				rurima_add_argv(&ret, (char *)dir);
 			} else if (strcmp(type, "application/x-xz") == 0) {
-				ret[0] = "proot";
-				ret[1] = "-0";
-				ret[2] = "tar";
-				ret[3] = "-xpJf";
-				ret[4] = "-";
-				ret[5] = "-C";
-				ret[6] = (char *)dir;
-				ret[7] = NULL;
+				rurima_add_argv(&ret, "proot");
+				rurima_add_argv(&ret, "-0");
+				rurima_add_argv(&ret, "tar");
+				rurima_add_argv(&ret, "-xpJf");
+				rurima_add_argv(&ret, "-");
+				rurima_add_argv(&ret, "-C");
+				rurima_add_argv(&ret, (char *)dir);
 			} else if (strcmp(type, "application/x-tar") == 0) {
-				ret[0] = "proot";
-				ret[1] = "-0";
-				ret[2] = "tar";
-				ret[3] = "-xpf";
-				ret[4] = "-";
-				ret[5] = "-C";
-				ret[6] = (char *)dir;
-				ret[7] = NULL;
+				rurima_add_argv(&ret, "proot");
+				rurima_add_argv(&ret, "-0");
+				rurima_add_argv(&ret, "tar");
+				rurima_add_argv(&ret, "-xpf");
+				rurima_add_argv(&ret, "-");
+				rurima_add_argv(&ret, "-C");
+				rurima_add_argv(&ret, (char *)dir);
 			} else {
 				free(type);
 				free(ret);
@@ -139,26 +134,23 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 		}
 	} else {
 		if (strcmp(type, "application/gzip") == 0) {
-			ret[0] = "tar";
-			ret[1] = "-xpzf";
-			ret[2] = "-";
-			ret[3] = "-C";
-			ret[4] = (char *)dir;
-			ret[5] = NULL;
+			rurima_add_argv(&ret, "tar");
+			rurima_add_argv(&ret, "-xpzf");
+			rurima_add_argv(&ret, "-");
+			rurima_add_argv(&ret, "-C");
+			rurima_add_argv(&ret, (char *)dir);
 		} else if (strcmp(type, "application/x-xz") == 0) {
-			ret[0] = "tar";
-			ret[1] = "-xpJf";
-			ret[2] = "-";
-			ret[3] = "-C";
-			ret[4] = (char *)dir;
-			ret[5] = NULL;
+			rurima_add_argv(&ret, "tar");
+			rurima_add_argv(&ret, "-xpJf");
+			rurima_add_argv(&ret, "-");
+			rurima_add_argv(&ret, "-C");
+			rurima_add_argv(&ret, (char *)dir);
 		} else if (strcmp(type, "application/x-tar") == 0) {
-			ret[0] = "tar";
-			ret[1] = "-xpf";
-			ret[2] = "-";
-			ret[3] = "-C";
-			ret[4] = (char *)dir;
-			ret[5] = NULL;
+			rurima_add_argv(&ret, "tar");
+			rurima_add_argv(&ret, "-xpf");
+			rurima_add_argv(&ret, "-");
+			rurima_add_argv(&ret, "-C");
+			rurima_add_argv(&ret, (char *)dir);
 		} else {
 			free(type);
 			free(ret);

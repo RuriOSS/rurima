@@ -96,30 +96,7 @@ int rurima_fork_rexec(char **_Nonnull argv)
 	/*
 	 * Fork and execv self with argv.
 	 */
-	pid_t pid = fork();
-	if (pid == -1) {
-		rurima_error("{red}Fork failed!\n");
-	}
-	if (pid == 0) {
-		size_t argc = 0;
-		while (argv[argc] != NULL) {
-			argc++;
-		}
-		char **new_argv = malloc(sizeof(char *) * (argc + 2));
-		new_argv[0] = "/proc/self/exe";
-		for (size_t i = 0; i < argc; i++) {
-			rurima_log("{base}Argv[%zu]: %s\n", i, argv[i]);
-			new_argv[i + 1] = argv[i];
-		}
-		new_argv[argc + 1] = NULL;
-		execv(new_argv[0], new_argv);
-		rurima_error("{red}Execv() failed!\n");
-		free(new_argv);
-		exit(1);
-	}
-	int status;
-	waitpid(pid, &status, 0);
-	return WEXITSTATUS(status);
+	return cth_fork_rexec_self(argv);
 }
 char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], char *_Nonnull input)
 {
