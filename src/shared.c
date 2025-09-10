@@ -497,7 +497,7 @@ bool rurima_sha256sum_exists(void)
 	/*
 	 * Check if sha256sum exists.
 	 */
-	char *command[] = { "sha256sum", "-v", NULL };
+	char *command[] = { "sha256sum", "--version", NULL };
 	char *result = rurima_fork_execvp_get_stdout_ignore_err(command);
 	if (result == NULL) {
 		return false;

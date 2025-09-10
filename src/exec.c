@@ -29,45 +29,18 @@
  *
  */
 #include "include/rurima.h"
-static size_t get_max_pipe_size(void)
-{
-	int fd = open("/proc/sys/fs/pipe-max-size", O_RDONLY);
-	if (fd < 0) {
-		return 65536; // Default pipe size
-	}
-	char buffer[16];
-	ssize_t bytes_read = read(fd, buffer, sizeof(buffer) - 1);
-	if (bytes_read < 0) {
-		close(fd);
-		return 65536; // Default pipe size
-	}
-	buffer[bytes_read] = '\0'; // Null-terminate the string
-	size_t max_size = strtoul(buffer, NULL, 10);
-	close(fd);
-	if (max_size == 0) {
-		return 65536; // Default pipe size
-	}
-	rurima_log("{base}Maximum pipe size: {green}%zu{base} bytes\n", max_size);
-	return max_size;
-}
 int rurima_fork_execvp(char *_Nonnull argv[])
 {
 	/*
 	 * fork(2) and then execvp(3).
 	 * Return the exit status of the child process.
 	 */
-	for (int i = 0; argv[i] != NULL; i++) {
-		rurima_log("{base}Argv[%d]: %s\n", i, argv[i]);
-	}
-	int pid = fork();
-	if (pid == 0) {
-		execvp(argv[0], argv);
-		// If execvp(3) failed, exit as error status 114.
-		exit(114);
-	}
-	int status = 0;
-	waitpid(pid, &status, 0);
-	return WEXITSTATUS(status);
+	struct cth_result *result = cth_exec(argv, NULL, true, false);
+	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
+	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);
+	int exit_code = result->exit_code;
+	cth_free_result(&result);
+	return exit_code;
 }
 char *rurima_fork_execvp_get_stdout_ignore_err(char *_Nonnull argv[])
 {
@@ -78,59 +51,12 @@ char *rurima_fork_execvp_get_stdout_ignore_err(char *_Nonnull argv[])
 	 * Return the stdout of the child process.
 	 * If failed, return NULL.
 	 */
-	// Create a pipe.
-	int pipefd[2];
-	if (pipe(pipefd) == -1) {
-		return NULL;
-	}
-	for (int i = 0; argv[i] != NULL; i++) {
-		rurima_log("{base}Argv[%d]: %s\n", i, argv[i]);
-	}
-	// fork(2) and then execvp(3).
-	int pid = fork();
-	if (pid == -1) {
-		return NULL;
-	}
-	if (pid == 0) {
-		// Close the read end of the pipe.
-		close(pipefd[0]);
-		// Redirect stdout and stderr to the write end of the pipe.
-		dup2(pipefd[1], STDOUT_FILENO);
-		int nullfd = open("/dev/null", O_WRONLY);
-		dup2(nullfd, STDERR_FILENO);
-		close(pipefd[1]);
-		execvp(argv[0], (char **)argv);
-		exit(114);
-	} else {
-		// Close the write end of the pipe.
-		close(pipefd[1]);
-		// Get the output from the read end of the pipe.
-		size_t buffer_size = 1024;
-		size_t total_read = 0;
-		char *output = malloc(buffer_size);
-		output[0] = '\0';
-		ssize_t bytes_read;
-		while ((bytes_read = read(pipefd[0], output + total_read, buffer_size - total_read - 1)) > 0) {
-			total_read += (size_t)bytes_read;
-			if (total_read >= buffer_size - 1) {
-				buffer_size *= 2;
-				char *new_output = realloc(output, buffer_size);
-				output = new_output;
-			}
-		}
-		if (bytes_read == -1) {
-			free(output);
-			close(pipefd[0]);
-			return NULL;
-		}
-		output[total_read] = '\0';
-		close(pipefd[0]);
-		int status = 0;
-		waitpid(pid, &status, 0);
-		rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], output);
-		return output;
-	}
-	return NULL;
+	struct cth_result *result = cth_exec(argv, NULL, true, true);
+	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
+	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);
+	char *output = result->stdout_ret ? strdup(result->stdout_ret) : NULL;
+	cth_free_result(&result);
+	return output;
 }
 char *rurima_fork_execvp_get_stdout(char *_Nonnull argv[])
 {
@@ -141,61 +67,15 @@ char *rurima_fork_execvp_get_stdout(char *_Nonnull argv[])
 	 * Return the stdout of the child process.
 	 * If failed, return NULL.
 	 */
-	// Create a pipe.
-	int pipefd[2];
-	if (pipe(pipefd) == -1) {
-		return NULL;
-	}
-	for (int i = 0; argv[i] != NULL; i++) {
-		rurima_log("{base}Argv[%d]: %s\n", i, argv[i]);
-	}
-	// fork(2) and then execvp(3).
-	int pid = fork();
-	if (pid == -1) {
-		return NULL;
-	}
-	if (pid == 0) {
-		// Close the read end of the pipe.
-		close(pipefd[0]);
-		// Redirect stdout and stderr to the write end of the pipe.
-		dup2(pipefd[1], STDOUT_FILENO);
-		int nullfd = open("/dev/null", O_WRONLY);
-		dup2(nullfd, STDERR_FILENO);
-		close(pipefd[1]);
-		execvp(argv[0], (char **)argv);
-		exit(114);
-	} else {
-		// Close the write end of the pipe.
-		close(pipefd[1]);
-		// Get the output from the read end of the pipe.
-		size_t buffer_size = 1024;
-		size_t total_read = 0;
-		char *output = malloc(buffer_size);
-		ssize_t bytes_read;
-		while ((bytes_read = read(pipefd[0], output + total_read, buffer_size - total_read - 1)) > 0) {
-			total_read += (size_t)bytes_read;
-			if (total_read >= buffer_size - 1) {
-				buffer_size *= 2;
-				char *new_output = realloc(output, buffer_size);
-				output = new_output;
-			}
-		}
-		if (bytes_read == -1) {
-			free(output);
-			close(pipefd[0]);
-			return NULL;
-		}
-		output[total_read] = '\0';
-		close(pipefd[0]);
-		int status = 0;
-		waitpid(pid, &status, 0);
-		if (WEXITSTATUS(status) != 0) {
-			free(output);
-			return NULL;
-		}
-		rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], output);
+	struct cth_result *result = cth_exec(argv, NULL, true, true);
+	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
+	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);
+	if (result->exit_code == 0) {
+		char *output = result->stdout_ret ? strdup(result->stdout_ret) : NULL;
+		cth_free_result(&result);
 		return output;
 	}
+	cth_free_result(&result);
 	return NULL;
 }
 void rurima_add_argv(char ***_Nonnull argv, char *_Nonnull arg)
@@ -250,84 +130,15 @@ char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], char *_Non
 	 * Return the stdout of the child process.
 	 * If failed, return NULL.
 	 */
-	// Create a pipe.
-	int pipefd_in[2];
-	if (pipe(pipefd_in) == -1) {
-		return NULL;
-	}
-	// Set the maximum pipe size.
-	size_t max_pipe_size = get_max_pipe_size();
-	fcntl(pipefd_in[1], F_SETPIPE_SZ, max_pipe_size);
-	int pipefd_out[2];
-	if (pipe(pipefd_out) == -1) {
-		return NULL;
-	}
-	// fork(2) and then execvp(3).
-	int pid = fork();
-	if (pid == -1) {
-		return NULL;
-	}
-	if (pid == 0) {
-		// Close the read end of the pipe.
-		close(pipefd_out[0]);
-		// Redirect stdout and stderr to the write end of the pipe.
-		dup2(pipefd_out[1], STDOUT_FILENO);
-		int nullfd = open("/dev/null", O_WRONLY);
-		dup2(nullfd, STDERR_FILENO);
-		close(pipefd_out[1]);
-		// Close the write end of the input pipe.
-		close(pipefd_in[1]);
-		// Redirect stdin to the read end of the input pipe.
-		// This will allow the child process to read from the input pipe.
-		dup2(pipefd_in[0], STDIN_FILENO);
-		// Close the read end of the input pipe.
-		close(pipefd_in[0]);
-		rurima_log("{base}Exec {green}%s{base}\n", argv[0]);
-		execvp(argv[0], (char **)argv);
-		exit(114);
-	} else {
-		usleep(100); // Give the child process some time to set up.
-		// Close the write end of the pipe.
-		close(pipefd_out[1]);
-		// Close the read end of the input pipe.
-		close(pipefd_in[0]);
-		// Write the input to the write end of the input pipe.
-		if (write(pipefd_in[1], input, strlen(input)) == -1) {
-			close(pipefd_in[1]);
-			close(pipefd_out[0]);
-			return NULL;
-		}
-		close(pipefd_in[1]);
-		rurima_log("{base}Input written to {green}%s{base}\n", argv[0]);
-		// Get the output from the read end of the pipe.
-		size_t buffer_size = 1024;
-		size_t total_read = 0;
-		char *output = malloc(buffer_size);
-		ssize_t bytes_read;
-		while ((bytes_read = read(pipefd_out[0], output + total_read, buffer_size - total_read - 1)) > 0) {
-			total_read += (size_t)bytes_read;
-			if (total_read >= buffer_size - 1) {
-				buffer_size *= 2;
-				char *new_output = realloc(output, buffer_size);
-				output = new_output;
-			}
-		}
-		if (bytes_read == -1) {
-			free(output);
-			close(pipefd_out[0]);
-			return NULL;
-		}
-		output[total_read] = '\0';
-		close(pipefd_out[0]);
-		int status = 0;
-		waitpid(pid, &status, 0);
-		if (WEXITSTATUS(status) != 0) {
-			free(output);
-			return NULL;
-		}
-		rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], output);
+	struct cth_result *result = cth_exec(argv, input, true, true);
+	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
+	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);
+	if (result->exit_code == 0) {
+		char *output = result->stdout_ret ? strdup(result->stdout_ret) : NULL;
+		cth_free_result(&result);
 		return output;
 	}
+	cth_free_result(&result);
 	return NULL;
 }
 char *rurima_call_jq(char *_Nonnull argv[], char *_Nonnull input)

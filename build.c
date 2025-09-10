@@ -653,8 +653,15 @@ void build()
 	for (int i = 0; easteregg_files && easteregg_files[i] != NULL; i++) {
 		add_args(&files, easteregg_files[i]);
 	}
+	char catsh_src[PATH_MAX];
+	sprintf(catsh_src, "%s/catsh/src", SRC_DIR);
+	char **catsh_files = find_file(catsh_src, ".c", NULL);
+	for (int i = 0; catsh_files && catsh_files[i] != NULL; i++) {
+		add_args(&files, catsh_files[i]);
+	}
 	compile_files_parallel(files, JOBS);
 	free_args(easteregg_files);
+	free_args(catsh_files);
 	free_args(files);
 	// Link
 	char **args = NULL;
