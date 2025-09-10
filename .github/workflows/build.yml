@@ -140,6 +140,18 @@ jobs:
       - name: Move all .tar files
         run: |
           find ./all -type f -name "*.tar" -exec mv {} ./ \;
+          # Upload only if file > 100KB
+          for file in ./*.tar; do
+            if [ ! -f "$file" ] || [ $(stat -c%s "$file") -lt 102400 ]; then
+              echo "Removing $file as it is smaller than 100KB"
+              rm -f "$file"
+            fi
+          done
+          # If no .tar files exist, exit with error
+          if [ -z "$(ls -A ./*.tar 2>/dev/null)" ]; then
+            echo "No .tar files found to upload. Exiting."
+            exit 1
+          fi
           git clone https://github.com/rurioss/rurima
           cd rurima;git rev-parse --short HEAD > ../commit-id.txt
 
