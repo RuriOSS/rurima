@@ -247,9 +247,9 @@ int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir)
 	struct cth_result *result = cth_exec_with_file_input(command, fd, true, true, show_progress_with_line, 0);
 	close(fd);
 	if (result->exit_code != 0) {
-		cth_free_result(&result);
-		free(command);
-		rurima_error("{red}Failed to extract archive!\n");
+		rurima_warning("{yellow}Extract command exited with code %d\n", result->exit_code);
+		rurima_warning("{yellow}stderr: %s\n", result->stderr_ret);
+		rurima_warning("{yellow}stdout: %s\n", result->stdout_ret);
 	}
 	cth_free_result(&result);
 	free(command);
