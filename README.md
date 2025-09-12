@@ -7,6 +7,9 @@
 ![](https://img.shields.io/badge/Powered%20By-GNU%20C-00d000?style=flat&labelColor=gray&logo=C)
 # The first release:
 v0.9.0 is the first release of rurima, some feature are still WIP, but it is already usable as the extended version of ruri.      
+# Backward compatibility:
+We promise that rurima has backward compatibility of documented parts since v0.9.x, all unstable parts will be explicitly marked as WIP or unstable, and ruri has already been backward compatible. Users can always keep `rurima ota` to get the latest build.           
+For any issue, please notify us, and we will fix it ASAP.                 
 # About:
 So, what is rurima?       
 The enhanced version of ruri.          
