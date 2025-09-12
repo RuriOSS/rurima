@@ -184,6 +184,34 @@ static void show_progress(double per)
 	fflush(stdout);
 	printf("\033[?25h");
 }
+static void show_progress_with_line(float per, int line)
+{
+	/*
+	 * Show progress bar.
+	 */
+	if (rurima_global_config.no_progress) {
+		return;
+	}
+	if (per < 0.0) {
+		printf("\n");
+		return;
+	}
+	struct winsize size;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	unsigned short width = size.ws_col - 10;
+	unsigned short pos = (unsigned short)(width * per);
+	printf("\033[?25l");
+	printf("\r[\033[32m");
+	for (unsigned short i = 0; i < pos; i++) {
+		printf("\033[1;38;2;254;228;208m/");
+	}
+	for (unsigned short i = pos; i < width; i++) {
+		printf("\033[0m ");
+	}
+	printf("\033[0m] %.2f%%", per * 100);
+	fflush(stdout);
+	printf("\033[?25h");
+}
 int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir)
 {
 	/*
@@ -211,56 +239,19 @@ int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir)
 		rurima_error("{red}Failed to create directory!\n");
 	}
 	cprintf("{base}Extracting {cyan}%s\n", file);
-	FILE *fp = fopen(file, "rb");
-	if (fp == NULL) {
-		perror("fopen");
+	int fd = open(file, O_RDONLY);
+	if (fd < 0) {
 		free(command);
 		rurima_error("{red}Failed to open file!\n");
 	}
-	int pipefd[2];
-	if (pipe(pipefd) == -1) {
-		perror("pipe");
+	struct cth_result *result = cth_exec_with_file_input(command, fd, true, true, show_progress_with_line, 0);
+	close(fd);
+	if (result->exit_code != 0) {
+		cth_free_result(&result);
 		free(command);
-		rurima_error("{red}Failed to create pipe!\n");
+		rurima_error("{red}Failed to extract archive!\n");
 	}
-	pid_t pid = fork();
-	if (pid == 0) {
-		close(pipefd[1]);
-		dup2(pipefd[0], STDIN_FILENO);
-		close(pipefd[0]);
-		int fd = open("/dev/null", O_WRONLY);
-		dup2(fd, STDOUT_FILENO);
-		dup2(fd, STDERR_FILENO);
-		execvp(command[0], command);
-		free(command);
-		rurima_error("{red}Failed to exec command!\n");
-	} else {
-		close(pipefd[0]);
-		// When buf is only 1024, it's very slow.
-		// But when buf is 114514, it's fast enough.
-		// So, this is the power of homo!!!!!!
-		char *buf = malloc(114514);
-		size_t bytes_read;
-		size_t total_read = 0;
-		while ((bytes_read = fread(buf, 1, 114514, fp)) > 0) {
-			total_read += bytes_read;
-			double progress = (double)total_read / (double)size;
-			show_progress(progress);
-			if (write(pipefd[1], buf, bytes_read) == -1) {
-				perror("write");
-				free(command);
-				rurima_error("{red}Failed to write to stdout!");
-			}
-		}
-		close(pipefd[1]);
-		fclose(fp);
-		wait(NULL);
-		show_progress(1.0);
-		printf("\n");
-		free(command);
-		free(buf);
-		return 0;
-	}
+	cth_free_result(&result);
 	free(command);
 	return 0;
 }
