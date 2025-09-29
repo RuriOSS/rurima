@@ -23,7 +23,7 @@ jobs:
       release_name: ${{ steps.fetch_version.outputs.release_name }}
       build_time: ${{ steps.fetch_version.outputs.build_time }}
     steps:
-      - name: fetch latest version
+      - name: Fetch latest version
         id: fetch_version
         run: |
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
@@ -51,7 +51,6 @@ jobs:
       contents: read
     strategy:
       matrix:
-        #arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64]
         arch: [x86_64, x86, aarch64, armhf, armv7, ppc64le, loongarch64, riscv64, s390x]
     env:
       ARCHITECTURE: ${{ matrix.arch }}
@@ -65,7 +64,7 @@ jobs:
           sudo apt-get --no-install-recommends -y install \
             binutils build-essential libcap-dev libseccomp-dev make qemu-user-static xz-utils
 
-      - name: build source code
+      - name: Build ruri for container
         run: |
           cd build
           git clone --depth 1 https://github.com/moe-hacker/ruri.git
@@ -73,7 +72,7 @@ jobs:
           cc -Wl,--gc-sections -static src/*.c src/easteregg/*.c -o ruri -lcap -lseccomp -lpthread
           cp ./ruri ../../
 
-      - name: download latest minirootfs
+      - name: Download alpine rootfs for ${{ matrix.arch }}
         env:
           URL: https://dl-cdn.alpinelinux.org/alpine/edge/releases
         run: |
