@@ -187,6 +187,15 @@ int main(int argc, char **argv)
 	rurima_warning("{red}You are using dev/debug build, if you think this is wrong, please rebuild rurima or get it from release page.\n");
 #endif
 	rurima_register_signal();
+	// Check for terminal width.
+	struct winsize size;
+	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == -1) {
+		rurima_global_config.no_progress = true;
+	}
+	if (size.ws_col <= 10 || size.ws_col >= 500) {
+		rurima_global_config.no_progress = true;
+	}
+	// Parse args.
 	if (argc == 1) {
 		show_help();
 		return 0;
