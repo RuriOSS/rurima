@@ -74,7 +74,7 @@ jobs:
 
       - name: Download alpine rootfs for ${{ matrix.arch }}
         env:
-          URL: https://dl-cdn.alpinelinux.org/alpine/3.22/releases
+          URL: https://dl-cdn.alpinelinux.org/alpine/v3.22/releases
         run: |
           cd build
           mkdir -p $ARCHITECTURE
