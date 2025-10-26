@@ -32,5 +32,5 @@
 #define RURIMA_VERSION "0.9.1"
 #define RURIMA_VERSION_MAJOR 0
 #define RURIMA_VERSION_MINOR 9
-#define RURIMA_VERSION_PATCH 1
+#define RURIMA_VERSION_PATCH 2
 #include "../ruri/src/include/version.h"
