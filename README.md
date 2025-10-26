@@ -5,6 +5,8 @@
 [![Build release](https://github.com/RuriOSS/rurima/actions/workflows/build.yml/badge.svg)](https://github.com/RuriOSS/rurima/actions/workflows/build.yml)
 
 ![](https://img.shields.io/badge/Powered%20By-GNU%20C-00d000?style=flat&labelColor=gray&logo=C)
+# What's new:
+- Some other OCI compatible registry support like ghcr.io could work with `-f/--fallback` option enabled now.      
 # The first release:
 v0.9.0 is the first release of rurima, some feature are still WIP, but it is already usable as the extended version of ruri.      
 # Backward compatibility:
