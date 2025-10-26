@@ -727,7 +727,7 @@ void default_cflags(void)
 	check_and_add_cflag("-fstack-clash-protection", false);
 	check_and_add_cflag("-mshstk", false);
 	check_and_add_cflag("-Wno-unused-result", false);
-	check_and_add_cflag("-O0", false);
+	check_and_add_cflag("-O2", false);
 	check_and_add_cflag("-Wl,--build-id=sha1", false);
 	check_and_add_cflag("-ffunction-sections", false);
 	check_and_add_cflag("-fdata-sections", false);
