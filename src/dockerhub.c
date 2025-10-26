@@ -380,9 +380,14 @@ static char *get_token(char *_Nonnull image, char *_Nullable mirror, bool fallba
 	char *auth_server_url = get_auth_server_url(mirror, fallback);
 	if (auth_server_url == NULL) {
 		if (fallback) {
-			rurima_log("{red}No auth server found, using homo magic token 1145141919810\n");
-			// We hope the server administrator is homo.
-			return strdup("1145141919810");
+			// For some OCI mirrors, they may not use www-authenticate header.
+			char default_url[4096] = { '\0' };
+			strcat(default_url, "https://");
+			strcat(default_url, mirror);
+			strcat(default_url, "/token?service=");
+			strcat(default_url, mirror);
+			auth_server_url = strdup(default_url);
+			rurima_log("{red}Can not get auth server, using default %s\n", auth_server_url);
 		} else {
 			rurima_error("{red}Failed to get auth server!\n");
 		}
@@ -437,6 +442,20 @@ static char *get_tag_manifests(const char *_Nonnull image, const char *_Nonnull 
 		rurima_error("{red}Failed to get manifests!\n");
 	}
 	rurima_log("{base}Manifests: \n{cyan}%s{clear}\n", ret);
+	// Check if there is an error message.
+	char *jq_cmd_0[] = { "jq", "-r", ".errors[] | .message", NULL };
+	char *error_msg = rurima_call_jq(jq_cmd_0, ret);
+	if (error_msg != NULL && strlen(error_msg) > 0) {
+		rurima_log("{red}Error message: %s\n", error_msg);
+		free(ret);
+		ret = NULL;
+		char *curl_command_err[] = { "curl", "-L", "-s", "-H", "Accept: application/vnd.oci.image.manifest.v1+json", "-H", "Accept: application/vnd.oci.image.index.v1+json", "-H", auth, url, NULL };
+		ret = rurima_fork_execvp_get_stdout(curl_command_err);
+		if (ret == NULL) {
+			rurima_error("{red}Failed to get error message!\n");
+		}
+	}
+	free(error_msg);
 	free(auth);
 	return ret;
 }
@@ -510,6 +529,9 @@ static struct BLOBS *get_blobs(const char *_Nonnull image, const char *_Nonnull 
 	ret->size = NULL;
 	char *jq_cmd_1[] = { "jq", "-r", ".[] | .digest", NULL };
 	char *layers_orig = rurima_call_jq(jq_cmd_1, layers);
+	if (layers_orig == NULL) {
+		rurima_error("{red}Failed to get digest!\n");
+	}
 	size_t len = rurima_split_lines(layers_orig, &ret->blobs);
 	char **size_char = NULL;
 	char *jq_cmd_2[] = { "jq", "-r", ".[] | .size", NULL };
@@ -912,6 +934,9 @@ static struct RURIMA_DOCKER *docker_pull_fallback(char *_Nonnull image, char *_N
 	}
 	char *jq_cmd_1[] = { "jq", "-r", ".[] | .digest", NULL };
 	char *layers_orig = rurima_call_jq(jq_cmd_1, layers);
+	if (layers_orig == NULL) {
+		rurima_error("{red}Failed to get digest!\n");
+	}
 	size_t len = rurima_split_lines(layers_orig, &blobs.blobs);
 	blobs.size = malloc(sizeof(size_t) * (len + 1));
 	for (size_t i = 0; i < len; i++) {

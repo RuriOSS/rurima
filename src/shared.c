@@ -524,6 +524,9 @@ size_t rurima_split_lines(const char *_Nonnull input, char ***_Nonnull lines)
 	 * Split the input into lines.
 	 * Warning: free() the lines after use.
 	 */
+	if (input == NULL) {
+		rurima_error("{red}rurima_split_lines: input is NULL\n");
+	}
 	size_t count = 0;
 	char *input_copy = strdup(input);
 	char *line = strtok(input_copy, "\n");
