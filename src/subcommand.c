@@ -725,9 +725,15 @@ void rurima_ota(void)
 	}
 	rurima_extract_archive("rurima.tar", ".");
 	char *self_path = realpath("/proc/self/exe", NULL);
+#if defined(RURIMA_DEBUG) || defined(RURIMA_DEV)
+	if (rurima_fork_execvp((char *[]){ "cp", "-f", "rurima-dbg", self_path, NULL }) != 0) {
+		rurima_error("{red}Failed to replace old version, please try to run with sudo\n");
+	}
+#else
 	if (rurima_fork_execvp((char *[]){ "cp", "-f", "rurima", self_path, NULL }) != 0) {
 		rurima_error("{red}Failed to replace old version, please try to run with sudo\n");
 	}
+#endif
 	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima.tar", NULL });
 	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima", NULL });
 	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima-dbg", NULL });
