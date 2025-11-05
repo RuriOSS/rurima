@@ -835,7 +835,7 @@ void rurima_load_rootfs(int argc, char **argv)
 	config_content[config_st.st_size] = 0;
 	fclose(config_file_fp);
 	// Print config.
-	rurima_docker_print_config_from_json(config_content, tmp_dir);
+	rurima_docker_print_config_from_json(config_content, rootfs_path);
 	free(manifest_content);
 	free(config_file);
 	free(layers_file_orig);
