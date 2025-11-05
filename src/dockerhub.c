@@ -1378,11 +1378,8 @@ int rurima_docker_search_arch(char *_Nonnull image, char *_Nonnull tag, char *_N
 void rurima_docker_print_config_from_json(const char *_Nonnull config, const char *_Nonnull savedir)
 {
 	/*
-	 * Warning: free() the return value after use.
-	 *
-	 * Get the config of image.
-	 * return a struct RURIMA_DOCKER.
-	 *
+	 * For load subcommand.
+	 * We just print the config from json string.
 	 */
 	struct RURIMA_DOCKER *ret = malloc(sizeof(struct RURIMA_DOCKER));
 	char *response = config;
