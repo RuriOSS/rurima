@@ -1375,3 +1375,96 @@ int rurima_docker_search_arch(char *_Nonnull image, char *_Nonnull tag, char *_N
 	free(tmp);
 	return 0;
 }
+void rurima_docker_print_config_from_json(const char *_Nonnull config, const char *_Nonnull savedir)
+{
+	/*
+	 * Warning: free() the return value after use.
+	 *
+	 * Get the config of image.
+	 * return a struct RURIMA_DOCKER.
+	 *
+	 */
+	struct RURIMA_DOCKER *ret = malloc(sizeof(struct RURIMA_DOCKER));
+	char *response = config;
+	{
+		char *jq_command_0[] = { "jq", "-r", "-j", ".architecture", NULL };
+		char *architecture = rurima_call_jq(jq_command_0, response);
+		rurima_log("{base}Arch: {cyan}%s{clear}\n", architecture == NULL ? "NULL" : architecture);
+		if (architecture == NULL) {
+			ret->architecture = NULL;
+		} else {
+			ret->architecture = architecture;
+		}
+	}
+	{
+		char *jq_command_1[] = { "jq", "-r", "-j", ".config.WorkingDir", NULL };
+		char *workdir = rurima_call_jq(jq_command_1, response);
+		rurima_log("{base}Workdir: {cyan}%s{clear}\n", workdir == NULL ? "NULL" : workdir);
+		if (workdir == NULL) {
+			ret->workdir = NULL;
+		} else {
+			ret->workdir = workdir;
+		}
+	}
+	{
+		char *jq_command_2[] = { "jq", "-r", "-j", "-c", ".config.Env", NULL };
+		char *env_from_json = rurima_call_jq(jq_command_2, response);
+		rurima_log("{base}Env: {cyan}%s{clear}\n", env_from_json == NULL ? "NULL" : env_from_json);
+		if (env_from_json != NULL) {
+			char *tmp = malloc(strlen(env_from_json) + 114);
+			sprintf(tmp, "env=%s\n", env_from_json);
+			char *env[RURI_MAX_ENVS / 2];
+			env[0] = NULL;
+			int len = k2v_get_key(char_array, "env", tmp, env, RURI_MAX_ENVS / 2);
+			parse_env(env, ret->env, len);
+			for (int i = 0; i < len; i++) {
+				rurima_log("{base}Env[%d]: {cyan}%s{clear}\n", i, env[i]);
+				free(env[i]);
+			}
+			ret->env[len * 2] = NULL;
+			free(tmp);
+			free(env_from_json);
+		} else {
+			ret->env[0] = NULL;
+		}
+	}
+	{
+		char *jq_command_3[] = { "jq", "-r", "-j", "-c", ".config.Entrypoint", NULL };
+		char *entrypoint = rurima_call_jq(jq_command_3, response);
+		rurima_log("{base}Entrypoint: {cyan}%s{clear}\n", entrypoint == NULL ? "NULL" : entrypoint);
+		if (entrypoint != NULL) {
+			char *tmp = malloc(strlen(entrypoint) + 114);
+			sprintf(tmp, "entrypoint=%s\n", entrypoint);
+			int len = k2v_get_key(char_array, "entrypoint", tmp, ret->entrypoint, RURI_MAX_COMMANDS);
+			for (int i = 0; i < len; i++) {
+				rurima_log("{base}Entrypoint[%d]: {cyan}%s{clear}\n", i, ret->entrypoint[i]);
+			}
+			ret->entrypoint[len] = NULL;
+			free(tmp);
+			free(entrypoint);
+		} else {
+			ret->entrypoint[0] = NULL;
+		}
+	}
+	{
+		char *jq_command_4[] = { "jq", "-r", "-j", "-c", ".config.Cmd", NULL };
+		char *cmdline = rurima_call_jq(jq_command_4, response);
+		rurima_log("{base}Cmdline: {cyan}%s{clear}\n", cmdline == NULL ? "NULL" : cmdline);
+		if (cmdline != NULL) {
+			char *tmp = malloc(strlen(cmdline) + 114);
+			sprintf(tmp, "cmdline=%s\n", cmdline);
+			int len = k2v_get_key(char_array, "cmdline", tmp, ret->command, RURI_MAX_COMMANDS);
+			for (int i = 0; i < len; i++) {
+				rurima_log("{base}Cmdline[%d]: {cyan}%s{clear}\n", i, ret->command[i]);
+			}
+			ret->command[len] = NULL;
+			free(tmp);
+			free(cmdline);
+		} else {
+			ret->command[0] = NULL;
+		}
+	}
+	rurima_show_docker_config(ret, savedir, "ruri", false);
+	rurima_free_docker_config(ret);
+	return;
+}

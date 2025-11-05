@@ -199,3 +199,5 @@ extern pid_t loading_animation_pid;
 void rurima_ota(void);
 void rurima_run(int argc, char **_Nonnull argv);
 void rurima_netns_wrapper(int argc, char **argv);
+void rurima_load_rootfs(int argc, char **argv);
+void rurima_docker_print_config_from_json(const char *_Nonnull config, const char *_Nonnull savedir);
