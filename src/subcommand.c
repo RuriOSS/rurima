@@ -185,7 +185,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 				rurima_error("{red}No skip layer specified!\n");
 			}
 			skip_layer = atoi(argv[i + 1]);
-			if (skip_layer < 0) {
+			if (skip_layer <= 0) {
 				rurima_error("{red}Skip layer must be a positive integer!\n");
 			}
 			i++;
@@ -559,6 +559,7 @@ void rurima_pull(int argc, char **_Nonnull argv)
 	char *version = NULL;
 	char *architecture = NULL;
 	char *savedir = NULL;
+	char *start_at = NULL;
 	bool docker_only = false;
 	bool fallback = false;
 	for (int i = 0; i < argc; i++) {
@@ -570,6 +571,7 @@ void rurima_pull(int argc, char **_Nonnull argv)
 			cprintf("{base}  -a, --arch: Architecture.\n");
 			cprintf("{base}  -d, --docker: Only search dockerhub for image.\n");
 			cprintf("{base}  -f, --fallback: Fallback mode, only for docker image.\n");
+			cprintf("{base}  -S, --start-at: Start at specific layer.\n");
 			cprintf("{base}Note: please remove `https://` prefix from mirror url.\n");
 			cprintf("{base}This is just a wrap of docker and lxc subcommand.\n");
 			cprintf("{base}It will re-exec itself to call the subcommand.\n");
@@ -586,6 +588,12 @@ void rurima_pull(int argc, char **_Nonnull argv)
 				rurima_error("{red}No architecture specified!\n");
 			}
 			architecture = argv[i + 1];
+			i++;
+		} else if (strcmp(argv[i], "-S") == 0 || strcmp(argv[i], "--start-at") == 0) {
+			if (i + 1 >= argc) {
+				rurima_error("{red}No start at layer specified!\n");
+			}
+			start_at = argv[i + 1];
 			i++;
 		} else if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--docker") == 0) {
 			docker_only = true;
@@ -649,6 +657,10 @@ void rurima_pull(int argc, char **_Nonnull argv)
 				rurima_add_argv(&rexec_argv, (char *)savedir);
 				rurima_add_argv(&rexec_argv, "-m");
 				rurima_add_argv(&rexec_argv, (char *)mirror);
+				if (start_at != NULL) {
+					rurima_add_argv(&rexec_argv, "-S");
+					rurima_add_argv(&rexec_argv, (char *)start_at);
+				}
 				int exit_status = rurima_fork_rexec(rexec_argv);
 				exit(exit_status);
 			}
