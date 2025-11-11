@@ -116,7 +116,7 @@ static char *get_lxc_index(const char *_Nullable mirror)
 	} else {
 		sprintf(url, "https://%s/meta/1.0/index-system", mirror);
 	}
-	char *command[] = { "curl", "-L", "-s", url, NULL };
+	char *command[] = { "curl", "--max-time", "2.5", "-L", "-s", url, NULL };
 	return rurima_fork_execvp_get_stdout(command);
 }
 static char *lxc_get_image_dir(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type)
