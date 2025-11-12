@@ -659,6 +659,12 @@ void build()
 	for (int i = 0; catsh_files && catsh_files[i] != NULL; i++) {
 		add_args(&files, catsh_files[i]);
 	}
+	char subcommand[PATH_MAX];
+	sprintf(subcommand, "%s/subcommand", SRC_DIR);
+	char **subcommand_files = find_file(subcommand, ".c", NULL);
+	for (int i = 0; subcommand_files && subcommand_files[i] != NULL; i++) {
+		add_args(&files, subcommand_files[i]);
+	}
 	compile_files_parallel(files, JOBS);
 	free_args(easteregg_files);
 	free_args(catsh_files);
