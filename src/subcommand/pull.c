@@ -143,10 +143,8 @@ void rurima_pull(int argc, char **_Nonnull argv)
 					rurima_add_argv(&rexec_argv, (char *)start_at);
 				}
 				int exit_status = rurima_fork_rexec(rexec_argv);
-				free(ver);
 				exit(exit_status);
 			}
-			free(ver);
 		}
 	}
 	rurima_error("Emmmm, I think it will never reach here.\n");
