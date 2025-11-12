@@ -337,13 +337,6 @@ static char *get_auth_server_url(const char *_Nullable mirror, bool fallback)
 		if (fallback) {
 			return NULL;
 		}
-		#ifdef RURIMA_DEV
-    printf("curl_command: ");
-    for (int i = 0; curl_command[i] != NULL; i++) {
-        printf("%s ", curl_command[i]);
-    }
-    printf("\n");
-    #endif
 		rurima_error("{red}Failed to get auth server!\n");
 	}
 	char *server = get_auth_server_from_header(response, fallback);
