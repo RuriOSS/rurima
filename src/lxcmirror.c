@@ -334,11 +334,11 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 		resolved_version = get_latest_version(os, architecture, type, index_data);
 		free(index_data);
 		if (resolved_version == NULL) {
-			goto EXIT;
+			return NULL;
 		}
 		cprintf("{base}Auto-selected latest version: {green}%s\n", resolved_version);
 	} else {
-		resloved_version = strdup(version);
+		resolved_version = strdup(version);
 	}
 
 	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
@@ -348,7 +348,6 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 		return NULL;
 	}
 	free(dir);
-EXIT:
 	if (resolved_version) {
 		return resolved_version;
 	} else {
