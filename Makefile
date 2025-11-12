@@ -41,7 +41,7 @@ CLEAN_LOG = @printf ' $(CCCOLOR)CLEAN$(ENDCOLOR) $(BINCOLOR)%b$(ENDCOLOR)\n'
 STRIP = strip
 # Formater.
 FORMATER = clang-format -i
-SRC = src/*.c src/subcommand/*.c src/ruri/src/easteregg/*.c src/ruri/src/*.c src/catsh/src/*.c
+SRC = src/*.c src/subcommand/*.c
 HEADER = src/include/*.h
 # Checker.
 CHECKER = clang-tidy
