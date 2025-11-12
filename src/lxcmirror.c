@@ -337,8 +337,9 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 			goto EXIT;
 		}
 		cprintf("{base}Auto-selected latest version: {green}%s\n", resolved_version);
-		version = resolved_version;
-	}
+      	} else {
+            resloved_version=strdup(version);
+        }
 
 	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
 	end_loading_animation();
