@@ -94,7 +94,7 @@ void rurima_pull(int argc, char **_Nonnull argv)
 			char **rexec_argv = malloc(sizeof(char *) * 124);
 			char *ver = rurima_lxc_have_image(mirror, image, version, architecture, NULL);
 			rexec_argv[0] = NULL;
-			if (!docker_only && strcmp(ver, version) != 0) {
+			if (!docker_only && ver != NULL) {
 				if (mirror == NULL) {
 					mirror = rurima_global_config.lxc_mirror;
 				}

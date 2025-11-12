@@ -351,7 +351,7 @@ EXIT:
 	if (resolved_version) {
 		return resolved_version;
 	} else {
-		return strdup(version);
+		return NULL;
 	}
 }
 void rurima_lxc_pull_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type, const char *_Nonnull savedir)
