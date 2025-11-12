@@ -305,7 +305,8 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 	/*
 	 * Check if the image is available in mirror.
 	 *
-	 * Return: true if available, false if not.
+	 * Return: the latest version or NULL.
+	 * IT SHOULD BE FREE BY CALLER
 	 */
 	start_loading_animation("Fetching metadata...");
 	if (architecture == NULL) {
@@ -322,7 +323,8 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 	}
 	
 	char *resolved_version = NULL;
-    if (version == NULL || strcmp(version, "latest") == 0) {
+	//The annotation is _Nonnull,so we don't check version=NULL.
+    if (strcmp(version, "latest") == 0) {
         char *index_data = get_lxc_index(mirror);
         end_loading_animation();
         if (index_data == NULL) {
@@ -340,10 +342,15 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
 	end_loading_animation();
 	if (dir == NULL) {
+	    free(resolved_version);
 		return NULL;
 	}
 	free(dir);
-    return strdup(version);
+    if (resolved_version) {
+        return resolved_version;
+    } else {
+        return strdup(version);
+    }
 }
 void rurima_lxc_pull_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type, const char *_Nonnull savedir)
 {
