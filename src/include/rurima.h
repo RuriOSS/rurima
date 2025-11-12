@@ -184,7 +184,7 @@ void rurima_backup(int argc, char **_Nonnull argv);
 char *rurima_fork_execvp_get_stdout_ignore_err(char *_Nonnull argv[]);
 bool rurima_sha256sum_exists(void);
 void rurima_pull(int argc, char **_Nonnull argv);
-bool rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type);
+char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type);
 int rurima_download_file(char *_Nonnull url, char *_Nonnull file, char *_Nullable token, ssize_t size);
 bool proot_exist(void);
 bool rurima_jq_exists(void);

@@ -35,6 +35,39 @@
  * os;version;arch;type;time;dir
  * ........
  */
+ 
+ char *get_latest_version(const char *os, const char *arch, const char *type, const char *index_data) {
+    char *latest_version = NULL;
+    char *data_copy = strdup(index_data);
+    char *saveptr;
+    char *line = strtok_r(data_copy, "\n", &saveptr);
+    char latest_date[32] = {0};
+
+    while (line) {
+        char *fields[6] = {0};
+        int i = 0;
+        char *token, *saveptr2;
+        token = strtok_r(line, ";", &saveptr2);
+        while (token && i < 6) {
+            fields[i++] = token;
+            token = strtok_r(NULL, ";", &saveptr2);
+        }
+
+        if (i >= 5 && strcmp(fields[0], os) == 0 && strcmp(fields[2], arch) == 0 && strcmp(fields[3], type) == 0) {
+            if (strlen(latest_date) == 0 || strcmp(fields[4], latest_date) > 0) {
+                strcpy(latest_date, fields[4]);
+                free(latest_version);
+                latest_version = strdup(fields[1]);
+            }
+        }
+
+        line = strtok_r(NULL, "\n", &saveptr);
+    }
+
+    free(data_copy);
+    return latest_version;
+}
+ 
 static char *line_get_value(const char *_Nonnull line, int index)
 {
 	/*
@@ -267,7 +300,7 @@ void rurima_lxc_search_image(const char *_Nullable mirror, const char *_Nonnull 
 		rurima_error("{red}No image found.\n");
 	}
 }
-bool rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type)
+char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type)
 {
 	/*
 	 * Check if the image is available in mirror.
@@ -287,13 +320,30 @@ bool rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull os
 	if (architecture == NULL) {
 		architecture = rurima_lxc_get_host_arch();
 	}
+	
+	char *resolved_version = NULL;
+    if (version == NULL || strcmp(version, "latest") == 0) {
+        char *index_data = get_lxc_index(mirror);
+        end_loading_animation();
+        if (index_data == NULL) {
+            rurima_error("{red}Failed to get index.\n");
+        }
+        resolved_version = get_latest_version(os, architecture, type, index_data);
+        free(index_data);
+        if (resolved_version == NULL) {
+            rurima_error("{red}No suitable image found for %s %s.\n", os, architecture);
+        }
+        cprintf("{base}Auto-selected latest version: {green}%s\n", resolved_version);
+        version = resolved_version;
+    }
+	
 	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
 	end_loading_animation();
 	if (dir == NULL) {
-		return false;
+		return NULL;
 	}
 	free(dir);
-	return true;
+    return strdup(version);
 }
 void rurima_lxc_pull_image(const char *_Nullable mirror, const char *_Nonnull os, const char *_Nonnull version, const char *_Nullable architecture, const char *_Nullable type, const char *_Nonnull savedir)
 {

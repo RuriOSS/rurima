@@ -93,7 +93,8 @@ void rurima_pull(int argc, char **_Nonnull argv)
 			}
 			char **rexec_argv = malloc(sizeof(char *) * 114);
 			rexec_argv[0] = NULL;
-			if (!docker_only && rurima_lxc_have_image(mirror, image, version, architecture, NULL)) {
+			if (!docker_only ) {
+			char *ver=rurima_lxc_have_image(mirror, image, version, architecture, NULL);
 				if (mirror == NULL) {
 					mirror = rurima_global_config.lxc_mirror;
 				}
@@ -107,12 +108,13 @@ void rurima_pull(int argc, char **_Nonnull argv)
 				rurima_add_argv(&rexec_argv, "-o");
 				rurima_add_argv(&rexec_argv, (char *)image);
 				rurima_add_argv(&rexec_argv, "-v");
-				rurima_add_argv(&rexec_argv, (char *)version);
+				rurima_add_argv(&rexec_argv, ver);
 				rurima_add_argv(&rexec_argv, "-a");
 				rurima_add_argv(&rexec_argv, (char *)architecture);
 				rurima_add_argv(&rexec_argv, "-s");
 				rurima_add_argv(&rexec_argv, (char *)savedir);
 				int exit_status = rurima_fork_rexec(rexec_argv);
+				free(ver);
 				exit(exit_status);
 			} else {
 				if (mirror == NULL) {
