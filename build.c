@@ -659,8 +659,15 @@ void build()
 	for (int i = 0; catsh_files && catsh_files[i] != NULL; i++) {
 		add_args(&files, catsh_files[i]);
 	}
+	char easteregg_src_rma[PATH_MAX];
+	sprintf(easteregg_src_rma, "%s/easteregg", SRC_DIR);
+	char **easteregg_rma_files = find_file(easteregg_src_rma, ".c", NULL);
+	for (int i = 0; easteregg_rma_files && easteregg_rma_files[i] != NULL; i++) {
+		add_args(&files, easteregg_rma_files[i]);
+	}
 	compile_files_parallel(files, JOBS);
 	free_args(easteregg_files);
+	free_args(easteregg_rma_files);
 	free_args(catsh_files);
 	free_args(files);
 	// Link

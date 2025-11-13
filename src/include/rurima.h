@@ -68,6 +68,7 @@
 #include "version.h"
 #include "../ruri/src/include/ruri.h"
 #include "../catsh/src/include/catsh.h"
+#include "../easteregg/daijin.h"
 struct RURIMA_CONFIG {
 	char *_Nonnull docker_mirror;
 	char *_Nonnull lxc_mirror;
