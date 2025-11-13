@@ -40,12 +40,14 @@ static void print_art(int x, bool clear)
 	for (short i = 0; i < y_win - lines - 1; i++) {
 		printf("\n");
 	}
+	fflush(stdout);
 	for (size_t i = 0; i < lines; i++) {
 		char32_t *line = art[i];
 		size_t line_len = strlen_char32_rma(line);
 		for (short k = 0; k < (x_win - line_len) / 2; k++) {
 			printf(" ");
 		}
+		fflush(stdout);
 		for (size_t j = 0; j < line_len; j++) {
 			if ((i + x > (line_len - j) / 3 + 18) && clear) {
 				printf(" ");
@@ -59,6 +61,7 @@ static void print_art(int x, bool clear)
 				} else {
 					printf("\033[38;2;254;228;208m");
 				}
+				fflush(stdout);
 			}
 			char character[64] = { '\0' };
 			mbstate_t state = { 0 };
@@ -74,6 +77,7 @@ static void print_art(int x, bool clear)
 		printf("\n");
 	}
 	printf("\033[0m");
+	fflush(stdout);
 }
 void rurima_QwQ()
 {
