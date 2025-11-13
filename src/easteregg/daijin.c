@@ -126,12 +126,14 @@ void rurima_QwQ(void)
 	sleep(2);
 	for (int i = 0; i < 30; i++) {
 		printf("\033[H\033[2J");
+		fflush(stdout);
 		print_art(i, false);
 		usleep(100000);
 	}
 	sleep(2);
 	for (int i = 0; i < 30; i++) {
 		printf("\033[H\033[2J");
+		fflush(stdout);
 		print_art(i, true);
 		usleep(50000);
 	}
