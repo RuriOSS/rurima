@@ -146,7 +146,7 @@ static char *get_lxc_index(const char *_Nullable mirror)
 	 */
 	char url[4096];
 	if (mirror == NULL) {
-		sprintf(url, "https://images.linuxcontainers.org/meta/1.0/index-system", rurima_global_config.lxc_mirror);
+		sprintf(url, "https://%s/meta/1.0/index-system", rurima_global_config.lxc_mirror);
 	} else {
 		sprintf(url, "https://%s/meta/1.0/index-system", mirror);
 	}
