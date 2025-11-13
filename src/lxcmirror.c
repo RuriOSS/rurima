@@ -146,7 +146,7 @@ static char *get_lxc_index(const char *_Nullable mirror)
 	 */
 	char url[4096];
 	if (mirror == NULL) {
-		sprintf(url, "https://%s/meta/1.0/index-system", rurima_global_config.lxc_mirror);
+		sprintf(url, "https://images.linuxcontainers.org/meta/1.0/index-system", rurima_global_config.lxc_mirror);
 	} else {
 		sprintf(url, "https://%s/meta/1.0/index-system", mirror);
 	}
@@ -341,7 +341,7 @@ char *rurima_lxc_have_image(const char *_Nullable mirror, const char *_Nonnull o
 		resolved_version = strdup(version);
 	}
 
-	char *dir = lxc_get_image_dir(mirror, os, version, architecture, type);
+	char *dir = lxc_get_image_dir(mirror, os, resolved_version, architecture, type);
 	end_loading_animation();
 	if (dir == NULL) {
 		free(resolved_version);
