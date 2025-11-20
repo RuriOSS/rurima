@@ -7,6 +7,10 @@
 [![Build release](https://github.com/RuriOSS/rurima/actions/workflows/build.yml/badge.svg)](https://github.com/RuriOSS/rurima/actions/workflows/build.yml)
 
 ![](https://img.shields.io/badge/Powered%20By-GNU%20C-00d000?style=flat&labelColor=gray&logo=C)
+
+# Send us your feedback!
+Your use case, your suggestions, and some ideas, anyway, we would love to hear from you!     
+[Discussions](https://github.com/RuriOSS/rurima/discussions/16)
 # What's new:
 - Some other OCI compatible registry support like ghcr.io could work with `-f/--fallback` option enabled now.      
 # The first release:
