@@ -52,8 +52,8 @@ void rurima_show_version_info(void)
 #if defined(RURI_COMMIT_ID)
 	cprintf("{base}%s%s%s", "built-in ruri commit id .........:  ", RURI_COMMIT_ID, "\n");
 #endif
-#if defined(LIBCAP_MAJOR) && defined(LIBCAP_MINOR)
-	cprintf("{base}%s%d%s%d%s", "libcap ..........................:  ", LIBCAP_MAJOR, ".", LIBCAP_MINOR, "\n");
+#if defined(CTH_VERSION_STRING)
+	cprintf("{base}%s%s%s", "built-in catsh version ..........:  ", CTH_VERSION_STRING, "\n");
 #endif
 	cprintf("{base}%s%s\n", "Compiler version ................:  ", __VERSION__);
 	cprintf("{base}%s%s\n", "Build date ......................:  ", __TIMESTAMP__);
