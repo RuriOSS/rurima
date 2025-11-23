@@ -168,6 +168,14 @@ static void show_progress(double per)
 	if (rurima_global_config.no_progress) {
 		return;
 	}
+	if (per < 0.0 || per > 1.0) {
+		return;
+	}
+	static double last_per = 0.0;
+	if (per - last_per < 0.005 && per < 1.0) {
+		return;
+	}
+	last_per = per;
 	struct winsize size;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 	unsigned short width = size.ws_col - 10;
@@ -188,6 +196,7 @@ static void show_progress_with_line(float per, int line)
 {
 	/*
 	 * Show progress bar.
+	 * Callback function for cth_exec_with_file_input().
 	 */
 	if (rurima_global_config.no_progress) {
 		return;
