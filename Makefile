@@ -48,7 +48,7 @@ CHECKER = clang-tidy
 CHECKER_FLAGS = --checks=*,-clang-analyzer-security.insecureAPI.strcpy,-altera-unroll-loops,-cert-err33-c,-concurrency-mt-unsafe,-clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,-readability-function-cognitive-complexity,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-bugprone-easily-swappable-parameters,-cert-err34-c,-misc-include-cleaner,-readability-identifier-length,-bugprone-signal-handler,-cert-msc54-cpp,-cert-sig30-c,-altera-id-dependent-backward-branch,-bugprone-suspicious-realloc-usage,-hicpp-signed-bitwise,-clang-analyzer-security.insecureAPI.UncheckedReturn
 -include config.mk
 # Target.
-objects = easteregg/daijin.o catsh/src/catsh.o net.o checkdep.o dockerhub.o exec.o info.o lxcmirror.o shared.o signal.o archive.o subcommand.o main.o ruri/src/easteregg/action.o ruri/src/easteregg/nekofeng.o ruri/src/easteregg/layer.o ruri/src/easteregg/typewriter.o ruri/src/caplist.o ruri/src/chroot.o ruri/src/cprintf.o ruri/src/info.o ruri/src/rurienv.o ruri/src/rurifetch.o ruri/src/seccomp.o ruri/src/signal.o ruri/src/umount.o ruri/src/unshare.o ruri/src/rootless.o ruri/src/mount.o ruri/src/k2v.o ruri/src/elf-magic.o ruri/src/config.o ruri/src/cgroup.o ruri/src/passwd.o ruri/src/ps.o ruri/src/ruri.o
+objects = ssfx/ssfx.o easteregg/daijin.o catsh/src/catsh.o net.o checkdep.o dockerhub.o exec.o info.o lxcmirror.o shared.o signal.o archive.o subcommand.o main.o ruri/src/easteregg/action.o ruri/src/easteregg/nekofeng.o ruri/src/easteregg/layer.o ruri/src/easteregg/typewriter.o ruri/src/caplist.o ruri/src/chroot.o ruri/src/cprintf.o ruri/src/info.o ruri/src/rurienv.o ruri/src/rurifetch.o ruri/src/seccomp.o ruri/src/signal.o ruri/src/umount.o ruri/src/unshare.o ruri/src/rootless.o ruri/src/mount.o ruri/src/k2v.o ruri/src/elf-magic.o ruri/src/config.o ruri/src/cgroup.o ruri/src/passwd.o ruri/src/ps.o ruri/src/ruri.o
 O = out
 BIN_TARGET = rurima
 .NOTPARALLEL:
@@ -75,6 +75,7 @@ build_dir:
 	@mkdir -p $(O)/ruri/src
 	@mkdir -p $(O)/ruri/src/easteregg
 	@mkdir -p $(O)/catsh/src
+	@mkdir -p $(O)/ssfx
 $(objects) :%.o:src/%.c $(build_dir)
 	@cd $(O)
 	@$(CC) $(CFLAGS) -c ../$< -o $@
@@ -104,3 +105,7 @@ help :
 	@echo "Only for developers:"
 	@echo "  make check          run clang-tidy"
 	@echo "  make format         format code"
+up :
+	git submodule update --init --recursive
+	git submodule foreach git pull origin main
+	git submodule foreach git checkout main

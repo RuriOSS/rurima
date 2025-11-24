@@ -65,3 +65,4 @@ docs/.vitepress/cache
 docs/.vitepress/.temp
 docs/.vitepress/dist
 node_modules
+sfx

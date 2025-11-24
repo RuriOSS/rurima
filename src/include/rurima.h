@@ -69,6 +69,7 @@
 #include "../ruri/src/include/ruri.h"
 #include "../catsh/src/include/catsh.h"
 #include "../easteregg/daijin.h"
+#include "../ssfx/include/ssfx.h"
 struct RURIMA_CONFIG {
 	char *_Nonnull docker_mirror;
 	char *_Nonnull lxc_mirror;
@@ -202,3 +203,4 @@ void rurima_run(int argc, char **_Nonnull argv);
 void rurima_netns_wrapper(int argc, char **argv);
 void rurima_load_rootfs(int argc, char **argv);
 void rurima_docker_print_config_from_json(const char *_Nonnull config, const char *_Nonnull savedir);
+void rurima_sfx(int argc, char **argv);

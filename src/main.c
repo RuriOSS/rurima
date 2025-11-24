@@ -279,6 +279,10 @@ int main(int argc, char **argv)
 			rurima_QwQ();
 			return 0;
 		}
+		if (strcmp(argv[i], "sfx") == 0) {
+			rurima_sfx(argc - i - 1, &argv[i + 1]);
+			return 0;
+		}
 		show_help();
 		rurima_error("{red}Invalid subcommand `%s`!\n", argv[i]);
 		return 1;

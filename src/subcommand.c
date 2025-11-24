@@ -870,3 +870,37 @@ void rurima_load_rootfs(int argc, char **argv)
 	cth_exec_command((char *[]){ "rm", "-rf", tmp_dir, NULL });
 	exit(0);
 }
+void rurima_sfx(int argc, char **_Nonnull argv)
+{
+	//
+	if (self_is_valid_ssfx_master()) {
+		rurima_log("{base}This is a valid rurima sfx master executable.\n");
+	} else if (self_is_valid_ssfx_pack()) {
+		rurima_log("{base}This is a valid rurima sfx packed executable.\n");
+	} else if (self_is_valid_ssfx_other()) {
+		rurima_log("{base}This is a valid rurima sfx other executable.\n");
+	} else {
+		rurima_log("{base}This is not a valid rurima sfx executable.\n");
+	}
+	cprintf("{red}Warning: rurima sfx feature is in development, do not use it anyway!\n");
+	//
+	if (argc == 0) {
+		rurima_error("{red}No subcommand specified!\n");
+	}
+	if (strcmp(argv[0], "pack-self") == 0) {
+		if (argc < 3) {
+			rurima_error("{red}Usage: rurima sfx pack-self <output_file> <input_dir>\n");
+		}
+		char *tar_exe_path = argv[1];
+		char *output_file = argv[2];
+		rurima_check_dir_deny_list(output_file);
+		pack_ssfx_master(tar_exe_path, output_file);
+		cprintf("{yellow}Warning: this feature is only for developers!\n");
+		cprintf("{yellow}Warning: make sure that tar and rurima executable are compatible with target system!\n");
+		cprintf("{yellow}Warning: make sure that tar and rurima executable are statically linked!\n");
+		exit(0);
+	}
+	if (!self_is_valid_ssfx_master()) {
+		rurima_error("{red}This executable is not a valid rurima sfx master!\n");
+	}
+}

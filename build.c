@@ -665,6 +665,12 @@ void build()
 	for (int i = 0; easteregg_rma_files && easteregg_rma_files[i] != NULL; i++) {
 		add_args(&files, easteregg_rma_files[i]);
 	}
+	char ssfx_src[PATH_MAX];
+	sprintf(ssfx_src, "%s/ssfx", SRC_DIR);
+	char **ssfx_files = find_file(ssfx_src, ".c", (char *[]){ "main.c", NULL });
+	for (int i = 0; ssfx_files && ssfx_files[i] != NULL; i++) {
+		add_args(&files, ssfx_files[i]);
+	}
 	compile_files_parallel(files, JOBS);
 	free_args(easteregg_files);
 	free_args(easteregg_rma_files);
