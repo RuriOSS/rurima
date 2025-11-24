@@ -55,6 +55,9 @@ void rurima_show_version_info(void)
 #if defined(CTH_VERSION_STRING)
 	cprintf("{base}%s%s%s", "built-in catsh version ..........:  ", CTH_VERSION_STRING, "\n");
 #endif
+#if defined(SSFX_VERSION_STRING)
+	cprintf("{base}%s%s%s", "built-in ssfx version ...........:  ", SSFX_VERSION_STRING, "\n");
+#endif
 	cprintf("{base}%s%s\n", "Compiler version ................:  ", __VERSION__);
 	cprintf("{base}%s%s\n", "Build date ......................:  ", __TIMESTAMP__);
 	cprintf("{base}\nThere is NO WARRANTY, to the extent permitted by law\n");
