@@ -55,6 +55,24 @@ Or run the follwing command to get rurima to ./rurima and ./rurima-dbg(debug ver
 ```sh
 . <(curl -sL https://get.ruri.zip/rurima)
 ```   
+# Install dependencies:
+For termux, run:
+```
+pkg install wget curl jq coreutils file proot tar xz-utils gzip
+```
+For Debian/Ubuntu based system, run:
+```
+apt install wget curl jq coreutils file proot tar xz-utils gzip
+```
+For RedHat/CentOS/Fedora based system, run:
+```
+dnf install wget curl jq coreutils file proot tar xz gzip
+```
+For Alpine based system, run:
+```
+apk add wget curl jq coreutils file proot tar xz gzip
+```
+
 # The new pull subcommand:
 It's a wrap of docker/lxc pull subcommand.      
 For example:      
