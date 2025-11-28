@@ -1,7 +1,5 @@
-# Warning:
-Since rurima has not released v1.0, some usage/features may change in the future.      
 # Undocumented part:
-The `run` and `netns` subcommand is WIP, it should not be used by users.    
+The `load`, `run`, `sfx` and `netns` subcommand is WIP, it should not be used by users.    
 # Image source:
 rurima currently supports both lxc-mirror and dockerhub as container image source.      
 # Unified image puller:
@@ -13,7 +11,7 @@ rurima pull alpine:edge ./test
 # pull hello-world to ./hello:
 rurima pull hello-world ./hello
 ```
-it's a bit like cmdline of docker, but, it will try lxc-mirror first if it found that the image is available there.    
+it's a bit like cmdline of docker, but, it will try lxc-mirror first, and auto switch to dockerhub if the image is not in lxc-mirror.       
 ## Full options:
 ```
 Usage: rurima pull <options> [image]:[version] [savedir]
@@ -96,7 +94,7 @@ You can add your perfered mirrors for `-T` option to try them first, for example
 `-i` and `-t` is required options for `config` and `pull` subcommand.    
 `-i` is also used for `search` subcommand for image name.    
 # lxc subcommand:
-# Full usage:
+## Full usage:
 ```
 Usage: rurima lxc [subcommand] [options]
 Subcommands:
@@ -117,5 +115,5 @@ Options:
 Note: please remove `https://` prefix from mirror url.
 For example: `-m images.linuxcontainers.org`
 ```
-# Note:
+## Note:
 `-o`, `-s` and `-v` is required options for `pull` subcommand.

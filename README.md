@@ -8,38 +8,6 @@
 
 ![](https://img.shields.io/badge/Powered%20By-GNU%20C-00d000?style=flat&labelColor=gray&logo=C)
 
-# Send us your feedback!
-Your use case, your suggestions, and some ideas, anyway, we would love to hear from you!     
-[Discussions](https://github.com/RuriOSS/rurima/discussions/16)      
-# Also, keep up to date:
-Some updates and news will be posted on:      
-[Twitter(X)](https://x.com/RuriOSS)      
-And, dont forget to `rurima ota` to get the latest build!      
-# What's new:
-- Some other OCI compatible registry support like ghcr.io could work with `-f/--fallback` option enabled now.      
-# The first release:
-v0.9.0 is the first release of rurima, some feature are still WIP, but it is already usable as the extended version of ruri.      
-# Backward compatibility:
-We promise that rurima has backward compatibility of documented parts since v0.9.x, all unstable parts will be explicitly marked as WIP or unstable, and ruri has already been backward compatible. Users can always keep `rurima ota` to get the latest build.           
-For any issue, please notify us, and we will fix it ASAP.                 
-# About:
-So, what is rurima?       
-The enhanced version of ruri.          
-ruri only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
-And it will be a more powerful container manager in the fulture.            
-With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
-## Not Only Ruri Container Manager:
-Rurima was planned to be the ruri container manager, but as rurima has a full integration of ruri now, you can just use it as a more powerful version of ruri, although the container manager function is still WIP.               
-For more info about ruri, see [ruri](https://github.com/Moe-hacker/ruri)      
-## Note & WIP:
-This project does not follow OCI and can only be a `PARTIAL` replacement of docker, this project is still under development.       
-## Terms of Use:
-See [TERMS_OF_USE.md](TERMS_OF_USE.md)
-## For Android user:
-You might need to root your phone before using rurima, some container might not work properly with proot.  
-# Full usage doc:
-For a full usage documentation,    
-See [USAGE.md](doc/USAGE.md)
 # WARNING:      
 ```
 * Your warranty is void.
@@ -49,6 +17,43 @@ See [USAGE.md](doc/USAGE.md)
 * Docker is a registered trademark of Docker, Inc. This program has no relationship with it.
 * This program has no Super Cow Powers.
 ```
+This project does not follow OCI standard and can only be a `PARTIAL` replacement of docker, this project is still under development.       
+For Android users, You might need to root your phone before using rurima, some container might not work properly with proot.         
+# Features:
+- Get rootfs images from dockerhub or LXC mirror.
+- Automatic parse docker image config and convert to ruri cmdline.
+- Unpack rootfs images with or without root privileges.
+- Backup/Restore rootfs with tar.
+- Built-in container runtime by ruri.
+- Static binary for multiple architectures.
+- Built-in OTA(upgrade) feature.
+
+In a word, rurima is a lightweight container implementation, it tries to get the most features of docker with the least dependencies, even when your kernel does not support cgroups or namespaces.      
+
+# Terms of Use:
+See [TERMS_OF_USE.md](TERMS_OF_USE.md)
+# Full usage doc:
+For a full usage documentation,    
+See [USAGE.md](doc/USAGE.md).     
+# Send us your feedback!
+Your use case, your suggestions, anyway, we would love to hear from you!     
+[Discussions](https://github.com/RuriOSS/rurima/discussions/16)      
+# Also, keep up to date:
+Some updates and news will be posted on:      
+[Twitter(X)](https://x.com/RuriOSS)      
+And, don't forget to `rurima ota` to get the latest build!      
+# What's new:
+- We have a unified `pull` command to get images from dockerhub or LXC mirror now.       
+- Some other OCI compatible registry like ghcr.io could work with `-f/--fallback` option enabled now.      
+# Backward compatibility:
+We promise that rurima has backward compatibility of documented parts since v0.9.x, all unstable parts will be explicitly marked as WIP or unstable, and ruri has already been backward compatible. Users can always keep `rurima ota` to get the latest build.           
+For any issue, please notify us, and we will fix it ASAP.                 
+# About:
+So, what is rurima?       
+The enhanced version of ruri.          
+[ruri](https://github.com/Moe-hacker/ruri) only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
+And it will be a more powerful container manager in the fulture.            
+With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
 # Download:
 You can get rurima binary (staticly linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 from the release page.     
 Or run the follwing command to get rurima to ./rurima and ./rurima-dbg(debug version):     
@@ -72,28 +77,11 @@ For Alpine based system, run:
 ```
 apk add wget curl jq coreutils file proot tar xz gzip
 ```
-
-# The new pull subcommand:
-It's a wrap of docker/lxc pull subcommand.      
-For example:      
-```sh
-rurima pull alpine:edge ./test
-```
-```sh
-rurima pull whyour/qinglong ./test
-```
-```sh
-rurima pull ubuntu ./test
-```
-It will search lxc image first, if not found, it will auto try to pull rootfs from dockerhub.      
 # About suid or caps:
 Rurima does not allow to set any suid/sgid (with root) or capability on it, it will check it in main() and error() if detected these unsafe settings.      
 So, please always use sudo instead.     
 # Reporting bugs:
 Please use the debug version(rurima-dbg) in release to get debug logs, and please tell me the command you run to cause the unexpected behavior you think!                     
-# NOTICE:
-This program is not official tool of docker or dockerhub, you can report bugs here, but this program has no relation with docker.      
-Docker is a registered trademark of Docker, Inc.      
 # Dependent:   
 rurima needs tar, xz, gzip, file, you can find these static binary for aarch64, armv7, x86_64, i386 or riscv64 in：      
 [tar-static](https://github.com/Moe-sushi/tar-static)      
@@ -118,9 +106,11 @@ https://mirrors.tuna.tsinghua.edu.cn/alpine/edge/testing/aarch64/proot-static-5.
 ```
 and finally, tar -xvf *.apk to unpack it. So you got proot.static, rename it to proot and put it in your $PATH.           
 # TODO:
-Manage ruri containers and configs.   
-Config support, a bit like Dockerfile.   
+
+Manage ruri containers and configs.       
+sfx pack for container images.      
 ....
+
 ---------
 
 <p align="center">「僕らタイムフライヤー</p>
