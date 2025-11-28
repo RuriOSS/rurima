@@ -748,6 +748,9 @@ void default_cflags(void)
 	check_and_add_cflag("-Wl,--strip-all", false);
 	check_and_add_cflag("-U_FORTIFY_SOURCE", false);
 	check_and_add_cflag("-D_FORTIFY_SOURCE=3", false);
+	check_and_add_cflag("-fvisibility=hidden", false);
+	check_and_add_cflag("-fsanitize=cfi", false);
+	check_and_add_cflag("-fsanitize=safe-stack", false);
 }
 // Dev cflags
 void dev_cflags(void)
@@ -804,7 +807,10 @@ int main(int argc, char **argv)
 				error("Error: Invalid number of jobs: %s", argv[i]);
 			}
 		} else if (strcmp(argv[i], "--static") == 0 || strcmp(argv[i], "-s") == 0) {
-			check_and_add_cflag("-static", true);
+			check_and_add_cflag("-static-pie", false);
+			if (!check_c_flag("-static-pie")) {
+				check_and_add_cflag("-static", true);
+			}
 		} else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
 			show_help();
 			exit(0);
