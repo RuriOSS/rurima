@@ -111,6 +111,10 @@ Manage ruri containers and configs.
 sfx pack for container images.      
 ....
 
+# License:
+Licensed under the MIT License.       
+Copyright (c) 2024-2025 Moe-hacker.       
+
 ---------
 
 <p align="center">「僕らタイムフライヤー</p>
