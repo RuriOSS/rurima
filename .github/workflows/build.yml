@@ -107,7 +107,24 @@ jobs:
               fi
               ;;
           esac
-
+          PATH_BK=$(pwd)
+          # Verify build
+          case "$ARCHITECTURE" in
+            x86_64|x86)
+              cd $ARCHITECTURE/output && ./rurima -v||exit 1
+              cd $PATH_BK
+              ;;
+            aarch64|armhf|ppc64le|armv7|riscv64|s390x|loongarch64)
+              if [ "$ARCHITECTURE" = "armv7" ]; then
+                cd $ARCHITECTURE/output && /usr/bin/qemu-arm-static ./rurima -v||exit 1
+                cd $PATH_BK
+              else
+                cd $ARCHITECTURE/output && /usr/bin/qemu-$ARCHITECTURE-static ./rurima -v||exit 1
+                cd $PATH_BK
+              fi
+              ;;
+          esac
+          cd $PATH_BK
           (cd $ARCHITECTURE/output && tar -cf ../../../$ARCHITECTURE.tar .)
 
           cd $GITHUB_WORKSPACE
