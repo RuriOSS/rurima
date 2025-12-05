@@ -106,6 +106,6 @@ help :
 	@echo "  make check          run clang-tidy"
 	@echo "  make format         format code"
 up :
-	git submodule update --init --recursive
-	git submodule foreach git pull origin main
-	git submodule foreach git checkout main
+	(cd src/catsh && git pull git@github.com:rurioss/catsh.git main)
+	(cd src/ssfx && git pull git@github.com:rurioss/ssfx.git main)
+	(cd src/ruri && git pull git@github.com:rurioss/ruri.git main)
