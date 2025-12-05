@@ -45,8 +45,6 @@ jobs:
         include:
         - language: c-cpp
           build-mode: manual
-        - language: python
-          build-mode: none
         # CodeQL supports the following values keywords for 'language': 'c-cpp', 'csharp', 'go', 'java-kotlin', 'javascript-typescript', 'python', 'ruby', 'swift'
         # Use `c-cpp` to analyze code written in C, C++ or both
         # Use 'java-kotlin' to analyze code written in Java, Kotlin or both
@@ -89,8 +87,9 @@ jobs:
               libcap-dev \
               libc6-dev \
               binutils
-          cc build.c
-          ./a.out -f -d
+          ./autogen.sh
+          ./configure
+          make
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
       with:
