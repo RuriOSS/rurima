@@ -800,12 +800,12 @@ void rurima_load_rootfs(int argc, char **argv)
 	// Read manifest.json
 	char manifest_path[PATH_MAX];
 	sprintf(manifest_path, "%s/manifest.json", tmp_dir);
+	FILE *manifest_file = fopen(manifest_path, "r");
 	struct stat st;
-	if (stat(manifest_path, &st) != 0) {
+	if (fstat(fileno(manifest_file), &st) != 0) {
 		rurima_error("{red}Failed to stat manifest.json!\n");
 	}
 	char *manifest_content = malloc(st.st_size + 1);
-	FILE *manifest_file = fopen(manifest_path, "r");
 	if (!manifest_file) {
 		rurima_error("{red}Failed to open manifest.json!\n");
 	}
