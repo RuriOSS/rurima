@@ -81,12 +81,13 @@ jobs:
       run: |
          sudo apt update
          sudo apt install -y \
-              make \
+              make git \
               clang \
               libseccomp-dev \
               libcap-dev \
               libc6-dev \
               binutils
+          git submodule update --init --recursive
           ./autogen.sh
           ./configure
           make
