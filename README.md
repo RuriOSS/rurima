@@ -19,6 +19,9 @@
 ```
 This project does not follow OCI standard and can only be a `PARTIAL` replacement of docker, this project is still under development.       
 For Android users, You might need to root your phone before using rurima, some container might not work properly with proot.         
+# Presets:
+We are working on some presets for using rurima to build your own projects, you can find them in the [presets](presets) directory.      
+The first preset is for running debian vm with avf on MTK devices, and we will add more presets in the future, PRs are welcome!      
 # Features:
 - Get rootfs images from dockerhub or LXC mirror.
 - Automatic parse docker image config and convert to ruri cmdline.
@@ -40,9 +43,6 @@ See [FAQ.md](doc/FAQ.md).
 # Send us your feedback!
 Your use case, your suggestions, anyway, we would love to hear from you!     
 [Discussions](https://github.com/RuriOSS/rurima/discussions/16)      
-# Also, keep up to date:
-Some updates and news will be posted on:      
-[Twitter(X)](https://x.com/RuriOSS)      
 And, don't forget to `rurima ota` to get the latest build!      
 # What's new:
 - We have a unified `pull` command to get images from dockerhub or LXC mirror now.       
