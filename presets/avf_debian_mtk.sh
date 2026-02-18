@@ -72,6 +72,8 @@ cat <<EOF >/etc/rc.local
 #!/bin/bash
 sleep 3
 net.sh
+mkdir -p /mnt/shared
+mount -t virtiofs shared /mnt/shared
 exit 0
 EOF
 
@@ -193,6 +195,14 @@ if [ ! -n "$BASH" ]; then
   printf "\033[31mThis is a bash script\033[0m\n"
   exit 1
 fi
+if [[ ! -e /apex/com.android.virt/bin/crosvm ]]; then
+  printf "\033[31mError: crosvm not found, make sure that your device supports virtualization\033[0m\n"
+  exit 1
+fi
+if [[ ! -e /dev/kvm && ! -e /dev/gunyah && ! -e /dev/gzvm ]]; then
+  printf "\033[31mError: KVM, GenieZone or Gunyah are not found, make sure that your device supports virtualization\033[0m\n"
+  exit 1
+fi
 if [[ -e debian.img ]]; then
   start_vm
   exit 0
@@ -222,6 +232,7 @@ build_debian_rootfs
 dd if=/dev/zero of=debian.img bs=1G count=8
 mkfs.ext4 debian.img
 migrate_to_ext4 data.img debian.img
+mkdir /sdcard/shared
 printf "\n\n"
 printf "\033[1;32mDefault root password is: xxxx\033[0m"
 printf "\n\n"
