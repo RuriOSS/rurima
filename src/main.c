@@ -175,6 +175,32 @@ static int pmcrts(const char *s1, const char *s2)
 	}
 	return strcmp(s2, s1 + len1 - len2);
 }
+static void reset_path_env(void)
+{
+	// Add current directory to PATH.
+	char exe_path[PATH_MAX];
+	if (readlink("/proc/self/exe", exe_path, sizeof(exe_path)) == -1) {
+		return;
+	}
+	exe_path[PATH_MAX - 1] = '\0';
+	for (int i = strlen(exe_path) - 1; i >= 0; i--) {
+		if (exe_path[i] == '/') {
+			exe_path[i] = '\0';
+			break;
+		}
+	}
+	char *path_env = getenv("PATH");
+	if (path_env == NULL) {
+		path_env = "";
+	}
+	char *new_path_env = malloc(strlen(path_env) + strlen(exe_path) + 2);
+	if (new_path_env == NULL) {
+		return;
+	}
+	sprintf(new_path_env, "%s:%s", exe_path, path_env);
+	setenv("PATH", new_path_env, 1);
+	free(new_path_env);
+}
 int main(int argc, char **argv)
 {
 	// Check for argv[0], if it's ruri, we will only call built-in ruri.
@@ -187,6 +213,7 @@ int main(int argc, char **argv)
 	rurima_warning("{red}You are using dev/debug build, if you think this is wrong, please rebuild rurima or get it from release page.\n");
 #endif
 	rurima_register_signal();
+	reset_path_env();
 	// Check for terminal width.
 	struct winsize size;
 	if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == -1) {
