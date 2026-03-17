@@ -33,6 +33,7 @@
 #ifndef __linux__
 #error "This code is only for Linux"
 #endif
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,6 +62,74 @@
 #endif
 #endif
 #define ERROR_NUM 114
+
+/////////////////////
+///////catsh.h///////
+/////////////////////
+#include <errno.h>
+#include <limits.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <poll.h>
+#include <sys/stat.h>
+#include <stdint.h>
+#include <fcntl.h>
+#define cth_debug(x) \
+	do {         \
+		x    \
+	} while (0)
+#define cth_log(format, ...)                                                                                                  \
+	{                                                                                                                     \
+		struct timeval tv;                                                                                            \
+		gettimeofday(&tv, NULL);                                                                                      \
+		fprintf(stderr, "[%ld.%06ld] in %s() in %s line %d:\n", tv.tv_sec, tv.tv_usec, __func__, __FILE__, __LINE__); \
+		fprintf(stderr, format, ##__VA_ARGS__);                                                                       \
+	}
+#define CTH_EXIT_FAILURE 114
+#define CTH_EXIT_SUCCESS 0
+#define CTH_VERSION_MAJOR 0
+#define CTH_VERSION_MINOR 6
+#define CTH_VERSION_PATCH 1
+#define CTH_VERSION_STRING "0.6.1"
+struct __attribute__((packed, aligned(1))) cth_result {
+	uint32_t cth_version;
+	size_t struct_size;
+	bool exited;
+	int exit_code;
+	char *stdout_ret;
+	char *stderr_ret;
+	pid_t pid;
+	pid_t ppid;
+	useconds_t time_used;
+	uint8_t reserved[256];
+};
+#define CTH_VERSION ((CTH_VERSION_MAJOR << 16) | (CTH_VERSION_MINOR << 8) | (CTH_VERSION_PATCH))
+#define CTH_ABI_COMPATIBLE(res) ((res) != NULL && (res)->cth_version <= CTH_VERSION && (res)->struct_size == sizeof(struct cth_result))
+int cth_add_arg(char ***argv, char *arg);
+void cth_free_argv(char ***argv);
+void cth_free_result(struct cth_result **res);
+struct cth_result *cth_exec(char **argv, char *input, bool block, bool get_output);
+int cth_fork_rexec_self(char *const argv[]);
+int cth_exec_command(char **argv);
+// TODO: non-blocking exec
+int cth_wait(struct cth_result **res);
+void *cth_init_argv(void);
+struct cth_result *cth_exec_with_file_input(char **argv, int fd, bool block, bool get_output, void (*progress)(float, int), int progress_line_num);
+void cth_show_progress(float progress, int line_num);
+#define CTH_EXEC_SUCCEED(res) ((res) != NULL && (res)->exited && ((res)->exit_code == 0))
+#define CTH_EXEC_FAILED(res) ((res) != NULL && (res)->exited && ((res)->exit_code != 0))
+#define CTH_EXEC_RUNNING(res) ((res) != NULL && !(res)->exited)
+#define CTH_EXEC_CANNOT_RUN(res) ((res) == NULL)
+/////////////////////
+///////catsh.h///////
+/////////////////////
+
 #define error(...)                                                                       \
 	{                                                                                \
 		fprintf(stderr, "Error in %s:%s%d: ", __FILE__, __FUNCTION__, __LINE__); \
@@ -86,30 +155,13 @@ int fork_exec(char **argv)
 {
 	// Return -1 if failed to exec()
 	// Or return same as exec()ed program.
-	int pid = fork();
-	if (pid < 0) {
-		perror("fork failed");
-		return -1;
-	} else if (pid == 0) {
-		int fd = open("/dev/null", O_WRONLY);
-		dup2(fd, STDOUT_FILENO);
-		dup2(fd, STDERR_FILENO);
-		dup2(fd, STDIN_FILENO);
-		close(fd);
-		execvp(argv[0], argv);
-		perror("exec failed");
-		exit(ERROR_NUM);
-	} else {
-		int status;
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status)) {
-			return WEXITSTATUS(status);
-		} else {
-			return -1;
-		}
-	}
+	struct cth_result *result = cth_exec(argv, NULL, true, false);
+	int ret = -1;
+	ret = result ? result->exit_code : -1;
+	cth_free_result(&result);
+	return ret;
 }
-char *fork_execvp_get_stdout(char *argv[])
+char *fork_execvp_get_stdout(char **argv)
 {
 	/*
 	 * Warning: free() after use.
@@ -118,69 +170,10 @@ char *fork_execvp_get_stdout(char *argv[])
 	 * Return the stdout of the child process.
 	 * If failed, return NULL.
 	 */
-	// Create a pipe.
-	int pipefd[2];
-	if (pipe(pipefd) == -1) {
-		return NULL;
-	}
-	// fork(2) and then execvp(3).
-	int pid = fork();
-	if (pid == -1) {
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return NULL;
-	}
-	if (pid == 0) {
-		// Close the read end of the pipe.
-		close(pipefd[0]);
-		// Redirect stdout and stderr to the write end of the pipe.
-		dup2(pipefd[1], STDOUT_FILENO);
-		int nullfd = open("/dev/null", O_WRONLY);
-		dup2(nullfd, STDERR_FILENO);
-		close(pipefd[1]);
-		execvp(argv[0], (char **)argv);
-		exit(ERROR_NUM);
-	} else {
-		// Close the write end of the pipe.
-		close(pipefd[1]);
-		// Get the output from the read end of the pipe.
-		size_t buffer_size = 1024;
-		size_t total_read = 0;
-		char *output = malloc(buffer_size);
-		if (!output) {
-			close(pipefd[0]);
-			return NULL;
-		}
-		ssize_t bytes_read;
-		while ((bytes_read = read(pipefd[0], output + total_read, buffer_size - total_read - 1)) > 0) {
-			total_read += (size_t)bytes_read;
-			if (total_read >= buffer_size - 1) {
-				buffer_size *= 2;
-				char *new_output = realloc(output, buffer_size);
-				if (!new_output) {
-					free(output);
-					close(pipefd[0]);
-					return NULL;
-				}
-				output = new_output;
-			}
-		}
-		if (bytes_read == -1) {
-			free(output);
-			close(pipefd[0]);
-			return NULL;
-		}
-		output[total_read] = '\0';
-		close(pipefd[0]);
-		int status = 0;
-		waitpid(pid, &status, 0);
-		if (WEXITSTATUS(status) != 0) {
-			free(output);
-			return NULL;
-		}
-		return output;
-	}
-	return NULL;
+	struct cth_result *result = cth_exec(argv, NULL, true, true);
+	char *output = result->stdout_ret ? strdup(result->stdout_ret) : NULL;
+	cth_free_result(&result);
+	return output;
 }
 // Never mind, this is safe broooo
 char **CFLAGS = NULL;
@@ -523,8 +516,11 @@ void compile(char *file)
 	unlink(output_file);
 	rmdir(output_file);
 	add_args(&args, file);
-	if (fork_exec(args) != 0) {
-		error("Error: Compiler %s failed to compile %s\n", CC, file);
+	struct cth_result *exec_result = cth_exec(args, NULL, true, true);
+	if (!exec_result) {
+		error("Error: failed to execute compiler for %s\n", file);
+	} else if (!exec_result->exited || exec_result->exit_code != 0) {
+		error("Error: failed to compile %s\nCompiler output:\nstderr:\n%s\nstdout:\n%s\n", file, exec_result->stderr_ret ? exec_result->stderr_ret : "No output", exec_result->stdout_ret ? exec_result->stdout_ret : "No output");
 	}
 	free_args(args);
 	pprintf("Compile %s :success\n", file);
@@ -690,8 +686,11 @@ void build()
 	for (int i = 0; LIBS && LIBS[i] != NULL; i++) {
 		add_args(&args, LIBS[i]);
 	}
-	if (fork_exec(args) != 0) {
-		error("Error: failed to link object files\n");
+	struct cth_result *exec_result = cth_exec(args, NULL, true, true);
+	if (!exec_result) {
+		error("Error: failed to execute linker\n");
+	} else if (!exec_result->exited || exec_result->exit_code != 0) {
+		error("Error: failed to link object files\nLinker output:\nstderr:\n%s\nstdout:\n%s\n", exec_result->stderr_ret ? exec_result->stderr_ret : "No output", exec_result->stdout_ret ? exec_result->stdout_ret : "No output");
 	}
 	pprintf("Link %s :success\n", OUTPUT);
 	free_args(args);
@@ -840,3 +839,1127 @@ int main(int argc, char **argv)
 	remove_test_dot_c();
 	return 0;
 }
+
+/////////////////////
+///////catsh.c///////
+/////////////////////
+static struct cth_result *cth_new(pid_t pid, pid_t ppid)
+{
+	/*
+	 * Allocate and initialize a new cth_result structure.
+	 * Returns a pointer to the new structure, or NULL on failure.
+	 */
+	struct cth_result *res = malloc(sizeof(struct cth_result));
+	if (res == NULL) {
+		return NULL;
+	}
+	res->exited = false;
+	res->exit_code = -1;
+	res->stdout_ret = NULL;
+	res->stderr_ret = NULL;
+	res->pid = pid;
+	res->ppid = ppid;
+	res->time_used = 0;
+	res->cth_version = CTH_VERSION;
+	res->struct_size = sizeof(struct cth_result);
+	memset(res->reserved, 0, sizeof(res->reserved));
+	return res;
+}
+int cth_add_arg(char ***argv, char *arg)
+{
+	/*
+	 * Add an argument to the argv array.
+	 * *argv: Pointer to the argv array. Can be NULL initially.
+	 * arg: The argument to add, should be a null-terminated string.
+	 * The argv array should be NULL-terminated.
+	 * Returns 0 on success, -1 on failure.
+	 * Warning: This function allocates memory.
+	 * The caller is responsible for freeing it using cth_free_argv().
+	 */
+	size_t argc = 0;
+	if (*argv != NULL) {
+		while ((*argv)[argc] != NULL) {
+			argc++;
+		}
+	}
+	char **new_argv = realloc(*argv, sizeof(char *) * (argc + 2));
+	if (new_argv == NULL) {
+		return -1;
+	}
+	new_argv[argc] = strdup(arg);
+	new_argv[argc + 1] = NULL;
+	*argv = new_argv;
+	return 0;
+}
+void cth_free_argv(char ***argv)
+{
+	/*
+	 * Free the argv array and its contents.
+	 * *argv: Pointer to the argv array, can be NULL.
+	 * After calling this function, *argv will be set to NULL.
+	 */
+	if (*argv == NULL) {
+		return;
+	}
+	size_t argc = 0;
+	while ((*argv)[argc] != NULL) {
+		free((*argv)[argc]);
+		argc++;
+	}
+	free(*argv);
+	*argv = NULL;
+}
+void cth_free_result(struct cth_result **res)
+{
+	/*
+	 * Free the cth_result structure and its contents.
+	 * *res: Pointer to the cth_result structure, can be NULL.
+	 * After calling this function, *res will be set to NULL.
+	 */
+	if (*res == NULL) {
+		return;
+	}
+	free((*res)->stdout_ret);
+	free((*res)->stderr_ret);
+	free(*res);
+	*res = NULL;
+}
+void *cth_init_argv(void)
+{
+	/*
+	 * Just a wrapper, returns NULL.
+	 */
+	return NULL;
+}
+static struct cth_result *cth_exec_nonblock(char **argv, char *input, bool get_output)
+{
+	// TODO
+	return NULL;
+}
+static struct cth_result *cth_exec_block_without_stdio(char **argv)
+{
+	/*
+	 * Just exec the command in blocking mode, without redirecting stdin/stdout/stderr.
+	 * This is the simplest case.
+	 */
+	pid_t pid = fork();
+	struct timeval start_time, end_time;
+	gettimeofday(&start_time, NULL);
+	// Just error handling.
+	if (pid < 0) {
+		return NULL;
+	}
+	// Child process, exec the command.
+	if (pid == 0) {
+		int fd = open("/dev/null", O_RDWR);
+		if (fd < 0) {
+			exit(CTH_EXIT_FAILURE);
+		}
+		dup2(fd, STDIN_FILENO);
+		dup2(fd, STDOUT_FILENO);
+		dup2(fd, STDERR_FILENO);
+		if (fd > 2) {
+			close(fd);
+		}
+		execvp(argv[0], argv);
+		exit(CTH_EXIT_FAILURE);
+	}
+	// Parent process, wait for child to exit.
+	struct cth_result *res = malloc(sizeof(struct cth_result));
+	if (res == NULL) {
+		return NULL;
+	}
+	res->pid = pid;
+	res->ppid = -1;
+	res->exited = false;
+	res->exit_code = -1;
+	res->stdout_ret = NULL;
+	res->stderr_ret = NULL;
+	int status = 0;
+	// Wait for child process, handle EINTR.
+	while (waitpid(pid, &status, 0) < 0) {
+		if (errno == EINTR) {
+			continue;
+		}
+		free(res);
+		return NULL;
+	}
+	gettimeofday(&end_time, NULL);
+	// Calculate time used in microseconds.
+	res->time_used = (end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec);
+	// Get exit code.
+	res->exited = true;
+	if (WIFEXITED(status)) {
+		res->exit_code = WEXITSTATUS(status);
+	} else if (WIFSIGNALED(status)) {
+		res->exit_code = 128 + WTERMSIG(status);
+	} else {
+		res->exit_code = -1;
+	}
+	return res;
+}
+static size_t pipe_buf_size(int fd)
+{
+	/*
+	 * Get the pipe buffer size using fcntl.
+	 * Returns the size on success, 0 on failure.
+	 * Note: this function will also try to set the pipe buffer size to the maximum allowed size.
+	 * As this is a internal function, we can do this.
+	 */
+	// Try to set the pipe buffer size to a large value.
+	// Get max allowed size from /proc/sys/fs/pipe-max-size.
+	FILE *f = fopen("/proc/sys/fs/pipe-max-size", "r");
+	if (f) {
+		char line[32];
+		if (fgets(line, sizeof(line), f)) {
+			size_t max_size = strtoul(line, NULL, 10);
+			if (max_size > 0) {
+				fcntl(fd, F_SETPIPE_SZ, max_size);
+			}
+		}
+		fclose(f);
+	}
+	// Get the pipe buffer size using fcntl.
+	int size = fcntl(fd, F_GETPIPE_SZ);
+	if (size < 0) {
+		return 0;
+	}
+	return (size_t)size;
+}
+static struct cth_result *cth_exec_block(char **argv, char *input, bool get_output)
+{
+	/*
+	 * Exec the command in blocking mode, with optional stdin input and stdout/stderr capture.
+	 * argv: The command and its arguments, NULL-terminated array of strings.
+	 * input: The input to be passed to the command's stdin, can be NULL.
+	 * get_output: If true, capture stdout and stderr output.
+	 * Returns a cth_result structure on success, NULL on failure.
+	 * The caller is responsible for freeing the result using cth_free_result().
+	 */
+	struct timeval start_time, end_time;
+	gettimeofday(&start_time, NULL);
+	// For the simplest case, just exec without stdio redirection
+	if (input == NULL && !get_output) {
+		return cth_exec_block_without_stdio(argv);
+	}
+	// Create pipes for stdin, stdout, stderr.
+	int stdin_pipe[2] = { -1, -1 };
+	int stdout_pipe[2] = { -1, -1 };
+	int stderr_pipe[2] = { -1, -1 };
+	if (input != NULL) {
+		if (pipe(stdin_pipe) < 0) {
+			return NULL;
+		}
+		// Set write end of stdin pipe to non-blocking.
+		int flags = fcntl(stdin_pipe[1], F_GETFL, 0);
+		if (flags != -1) {
+			fcntl(stdin_pipe[1], F_SETFL, flags | O_NONBLOCK);
+		}
+	}
+	if (get_output) {
+		if (pipe(stdout_pipe) < 0) {
+			if (stdin_pipe[0] != -1) {
+				close(stdin_pipe[0]);
+				close(stdin_pipe[1]);
+			}
+			return NULL;
+		}
+		if (pipe(stderr_pipe) < 0) {
+			if (stdin_pipe[0] != -1) {
+				close(stdin_pipe[0]);
+				close(stdin_pipe[1]);
+			}
+			if (stdout_pipe[0] != -1) {
+				close(stdout_pipe[0]);
+				close(stdout_pipe[1]);
+			}
+			return NULL;
+		}
+	}
+	pid_t pid = fork();
+	// Error handling.
+	if (pid < 0) {
+		if (stdin_pipe[0] != -1) {
+			close(stdin_pipe[0]);
+			close(stdin_pipe[1]);
+		}
+		if (stdout_pipe[0] != -1) {
+			close(stdout_pipe[0]);
+			close(stdout_pipe[1]);
+		}
+		if (stderr_pipe[0] != -1) {
+			close(stderr_pipe[0]);
+			close(stderr_pipe[1]);
+		}
+		return NULL;
+	}
+	if (pid == 0) {
+		// Child process.
+		if (input != NULL) {
+			close(stdin_pipe[1]);
+			dup2(stdin_pipe[0], STDIN_FILENO);
+			close(stdin_pipe[0]);
+		} else {
+			int fd = open("/dev/null", O_RDONLY);
+			if (fd >= 0) {
+				dup2(fd, STDIN_FILENO);
+				if (fd > 2) {
+					close(fd);
+				}
+			}
+		}
+		if (get_output) {
+			close(stdout_pipe[0]);
+			dup2(stdout_pipe[1], STDOUT_FILENO);
+			close(stdout_pipe[1]);
+			close(stderr_pipe[0]);
+			dup2(stderr_pipe[1], STDERR_FILENO);
+			close(stderr_pipe[1]);
+		} else {
+			int fd = open("/dev/null", O_WRONLY);
+			if (fd >= 0) {
+				dup2(fd, STDOUT_FILENO);
+				dup2(fd, STDERR_FILENO);
+				if (fd > 2) {
+					close(fd);
+				}
+			}
+		}
+		execvp(argv[0], argv);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+		_exit(CTH_EXIT_FAILURE);
+	}
+	// Parent process.
+	// Close unused pipe ends.
+	if (input != NULL) {
+		close(stdin_pipe[0]);
+	}
+	if (get_output) {
+		close(stdout_pipe[1]);
+		close(stderr_pipe[1]);
+	}
+	struct cth_result *res = cth_new(pid, -1);
+	if (res == NULL) {
+		// Free pipes
+		if (input != NULL) {
+			close(stdin_pipe[1]);
+		}
+		if (get_output) {
+			close(stdout_pipe[0]);
+			close(stderr_pipe[0]);
+		}
+		return NULL;
+	}
+	// Buffers for stdout and stderr.
+	char *stdout_buf = NULL;
+	char *stderr_buf = NULL;
+	size_t stdout_size = 0;
+	size_t stderr_size = 0;
+	size_t stdout_cap = 0;
+	size_t stderr_cap = 0;
+	size_t BUF_CHUNK = 4096;
+	if (get_output) {
+		BUF_CHUNK = pipe_buf_size(stdout_pipe[0]);
+		BUF_CHUNK = BUF_CHUNK > 0 ? BUF_CHUNK : 4096;
+		size_t BUF_CHUNK_NEW = pipe_buf_size(stderr_pipe[0]);
+		if (BUF_CHUNK_NEW > 0 && BUF_CHUNK_NEW < BUF_CHUNK) {
+			BUF_CHUNK = BUF_CHUNK_NEW;
+		}
+	}
+	if (input != NULL) {
+		size_t BUF_CHUNK_NEW = pipe_buf_size(stdin_pipe[1]);
+		if (BUF_CHUNK_NEW > 0 && BUF_CHUNK_NEW < BUF_CHUNK) {
+			BUF_CHUNK = BUF_CHUNK_NEW;
+		}
+	}
+	// poll loop to handle stdin, stdout, stderr.
+	struct pollfd pfds[3];
+	int nfds = 0;
+	int stdin_idx = -1;
+	int stdout_idx = -1;
+	int stderr_idx = -1;
+	if (input != NULL) {
+		pfds[nfds].fd = stdin_pipe[1];
+		pfds[nfds].events = POLLOUT;
+		stdin_idx = nfds++;
+	}
+	if (get_output) {
+		pfds[nfds].fd = stdout_pipe[0];
+		pfds[nfds].events = POLLIN;
+		stdout_idx = nfds++;
+		pfds[nfds].fd = stderr_pipe[0];
+		pfds[nfds].events = POLLIN;
+		stderr_idx = nfds++;
+	}
+	ssize_t input_written = 0;
+	ssize_t input_len = input ? (ssize_t)strlen(input) : 0;
+	// Loop until all fds are closed.
+	while (nfds > 0) {
+		// Check if child exited before poll
+		int status = 0;
+		pid_t wait_ret = waitpid(pid, &status, WNOHANG);
+		if (wait_ret == pid) {
+			res->exited = true;
+			if (WIFEXITED(status)) {
+				res->exit_code = WEXITSTATUS(status);
+			} else if (WIFSIGNALED(status)) {
+				res->exit_code = 128 + WTERMSIG(status);
+			} else {
+				res->exit_code = -1;
+			}
+			// Continue reading stdout/stderr
+			if (get_output && stdout_idx != -1) {
+				ssize_t n;
+				while ((n = read(stdout_pipe[0], stdout_buf ? stdout_buf + stdout_size : NULL, BUF_CHUNK)) > 0) {
+					if (stdout_cap - stdout_size < (size_t)n) {
+						stdout_cap = stdout_cap ? stdout_cap * 2 : BUF_CHUNK;
+						stdout_buf = realloc(stdout_buf, stdout_cap);
+					}
+					memcpy(stdout_buf + stdout_size, stdout_buf + stdout_size, n);
+					stdout_size += n;
+				}
+				close(stdout_pipe[0]);
+				stdout_idx = -1;
+			}
+			if (get_output && stderr_idx != -1) {
+				ssize_t n;
+				while ((n = read(stderr_pipe[0], stderr_buf ? stderr_buf + stderr_size : NULL, BUF_CHUNK)) > 0) {
+					if (stderr_cap - stderr_size < (size_t)n) {
+						stderr_cap = stderr_cap ? stderr_cap * 2 : BUF_CHUNK;
+						stderr_buf = realloc(stderr_buf, stderr_cap);
+					}
+					memcpy(stderr_buf + stderr_size, stderr_buf + stderr_size, n);
+					stderr_size += n;
+				}
+				close(stderr_pipe[0]);
+				stderr_idx = -1;
+			}
+			if (input != NULL && stdin_idx != -1) {
+				close(stdin_pipe[1]);
+				stdin_idx = -1;
+			}
+			// Set output buffers to result (if any data was read)
+			if (get_output) {
+				if (stdout_buf) {
+					stdout_buf = realloc(stdout_buf, stdout_size + 1);
+					stdout_buf[stdout_size] = 0;
+					res->stdout_ret = stdout_buf;
+				}
+				if (stderr_buf) {
+					stderr_buf = realloc(stderr_buf, stderr_size + 1);
+					stderr_buf[stderr_size] = 0;
+					res->stderr_ret = stderr_buf;
+				}
+			}
+			return res;
+		}
+		int ret = poll(pfds, nfds, -1);
+		if (ret < 0 && errno == EINTR) {
+			continue;
+		}
+		if (ret < 0) {
+			break;
+		}
+		// Write to stdin.
+		if (input != NULL && stdin_idx != -1 && (pfds[stdin_idx].revents & POLLOUT)) {
+			size_t remain = input_len - input_written;
+			size_t chunk = remain > BUF_CHUNK ? BUF_CHUNK : remain;
+			ssize_t n = write(stdin_pipe[1], input + input_written, chunk);
+			if (n > 0) {
+				input_written += n;
+				if (input_written >= input_len) {
+					close(stdin_pipe[1]);
+					// remove stdin_idx from pfds.
+					for (int i = stdin_idx + 1; i < nfds; ++i) {
+						pfds[i - 1] = pfds[i];
+					}
+					nfds--;
+					// update indexes.
+					if (stdout_idx > stdin_idx) {
+						stdout_idx--;
+					}
+					if (stderr_idx > stdin_idx) {
+						stderr_idx--;
+					}
+					stdin_idx = -1;
+				}
+			} else if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+				// write buffer full, skip this round, wait for next poll.
+				continue;
+			} else {
+				close(stdin_pipe[1]);
+				// remove stdin_idx from pfds.
+				for (int i = stdin_idx + 1; i < nfds; ++i) {
+					pfds[i - 1] = pfds[i];
+				}
+				nfds--;
+				if (stdout_idx > stdin_idx) {
+					stdout_idx--;
+				}
+				if (stderr_idx > stdin_idx) {
+					stderr_idx--;
+				}
+				stdin_idx = -1;
+			}
+		}
+		// POLLHUP or POLLERR for stdin.
+		if (input != NULL && stdin_idx != -1 && (pfds[stdin_idx].revents & (POLLHUP | POLLERR))) {
+			close(stdin_pipe[1]);
+			// remove stdin_idx from pfds.
+			for (int i = stdin_idx + 1; i < nfds; ++i) {
+				pfds[i - 1] = pfds[i];
+			}
+			nfds--;
+			if (stdout_idx > stdin_idx) {
+				stdout_idx--;
+			}
+			if (stderr_idx > stdin_idx) {
+				stderr_idx--;
+			}
+			stdin_idx = -1;
+		}
+		// Read from stdout.
+		if (get_output && stdout_idx != -1 && (pfds[stdout_idx].revents & POLLIN)) {
+			if (stdout_cap - stdout_size < BUF_CHUNK) {
+				stdout_cap = stdout_cap ? stdout_cap * 2 : BUF_CHUNK;
+				stdout_buf = realloc(stdout_buf, stdout_cap);
+			}
+			ssize_t n = read(stdout_pipe[0], stdout_buf + stdout_size, BUF_CHUNK);
+			if (n > 0) {
+				stdout_size += n;
+			} else {
+				close(stdout_pipe[0]);
+				// remove stdout_idx from pfds.
+				for (int i = stdout_idx + 1; i < nfds; ++i) {
+					pfds[i - 1] = pfds[i];
+				}
+				nfds--;
+				if (stderr_idx > stdout_idx) {
+					stderr_idx--;
+				}
+				stdout_idx = -1;
+			}
+		}
+		// POLLHUP or POLLERR for stdout.
+		if (get_output && stdout_idx != -1 && (pfds[stdout_idx].revents & (POLLHUP | POLLERR))) {
+			close(stdout_pipe[0]);
+			// remove stdout_idx from pfds.
+			for (int i = stdout_idx + 1; i < nfds; ++i) {
+				pfds[i - 1] = pfds[i];
+			}
+			nfds--;
+			if (stderr_idx > stdout_idx) {
+				stderr_idx--;
+			}
+			stdout_idx = -1;
+		}
+		// Read from stderr.
+		if (get_output && stderr_idx != -1 && (pfds[stderr_idx].revents & POLLIN)) {
+			if (stderr_cap - stderr_size < BUF_CHUNK) {
+				stderr_cap = stderr_cap ? stderr_cap * 2 : BUF_CHUNK;
+				stderr_buf = realloc(stderr_buf, stderr_cap);
+			}
+			ssize_t n = read(stderr_pipe[0], stderr_buf + stderr_size, BUF_CHUNK);
+			if (n > 0) {
+				stderr_size += n;
+			} else {
+				close(stderr_pipe[0]);
+				// remove stderr_idx from pfds.
+				for (int i = stderr_idx + 1; i < nfds; ++i) {
+					pfds[i - 1] = pfds[i];
+				}
+				nfds--;
+				stderr_idx = -1;
+			}
+		}
+		// POLLHUP or POLLERR for stderr.
+		if (get_output && stderr_idx != -1 && (pfds[stderr_idx].revents & (POLLHUP | POLLERR))) {
+			close(stderr_pipe[0]);
+			// remove stderr_idx from pfds.
+			for (int i = stderr_idx + 1; i < nfds; ++i) {
+				pfds[i - 1] = pfds[i];
+			}
+			nfds--;
+			stderr_idx = -1;
+		}
+		// Check if all fds are closed.
+		if ((stdin_idx == -1) && (stdout_idx == -1) && (stderr_idx == -1)) {
+			break;
+		}
+	}
+	// Parent process, wait for child to exit.
+	int status = 0;
+	// Wait for child process, handle EINTR
+	while (waitpid(pid, &status, 0) < 0) {
+		if (errno == EINTR) {
+			continue;
+		}
+		break;
+	}
+	gettimeofday(&end_time, NULL);
+	// Calculate time used in microseconds.
+	res->time_used = (end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec);
+	res->exited = true;
+	if (WIFEXITED(status)) {
+		res->exit_code = WEXITSTATUS(status);
+	} else if (WIFSIGNALED(status)) {
+		res->exit_code = 128 + WTERMSIG(status);
+	} else {
+		res->exit_code = -1;
+	}
+	// Set output buffers to result.
+	if (get_output) {
+		// Make sure buffers are null-terminated.
+		if (stdout_buf) {
+			stdout_buf = realloc(stdout_buf, stdout_size + 1);
+			stdout_buf[stdout_size] = 0;
+			res->stdout_ret = stdout_buf;
+		}
+		if (stderr_buf) {
+			stderr_buf = realloc(stderr_buf, stderr_size + 1);
+			stderr_buf[stderr_size] = 0;
+			res->stderr_ret = stderr_buf;
+		}
+	}
+	return res;
+}
+// API function.
+struct cth_result *cth_exec(char **argv, char *input, bool block, bool get_output)
+{
+	/*
+	 * Exec the command with given arguments.
+	 * argv: The command and its arguments, NULL-terminated array of strings.
+	 * input: The input to be passed to the command's stdin, can be NULL.
+	 * block: If true, wait for the command to finish and return the result.
+	 *        If false, return immediately (not implemented yet).
+	 * get_output: If true, capture stdout and stderr output.
+	 * Returns a cth_result structure on success, NULL on failure.
+	 * The caller is responsible for freeing the result using cth_free_result().
+	 */
+	if (argv == NULL || argv[0] == NULL) {
+		return NULL;
+	}
+	// For now, only blocking mode is implemented.
+	if (block) {
+		return cth_exec_block(argv, input, get_output);
+	}
+	// TODO
+	cth_debug(printf("cth_exec: non-blocking mode not implemented yet\n"););
+	return NULL;
+}
+// API function.
+int cth_exec_command(char **argv)
+{
+	/*
+	 * Just exec the command in blocking mode, and return the exit code.
+	 * If the command cannot be executed, return -1.
+	 * This is a simple wrapper around cth_exec().
+	 */
+	struct cth_result *res = cth_exec(argv, NULL, true, false);
+	if (res == NULL) {
+		return -1;
+	}
+	int exit_code = res->exit_code;
+	cth_free_result(&res);
+	return exit_code;
+}
+int cth_wait(struct cth_result **res)
+{
+	// TODO
+	return -1;
+}
+int cth_fork_rexec_self(char *const argv[])
+{
+	/*
+	 * Fork and re-exec the current executable with given arguments.
+	 * argv: The arguments to pass to the new executable, NULL-terminated array of strings.
+	 * Returns the exit code of the new process on success, -1 on failure.
+	 * Note: This function will block, and use current terminal for stdio.
+	 */
+	pid_t pid = fork();
+	if (pid == -1) {
+		return -1;
+	}
+	if (pid == 0) {
+		size_t argc = 0;
+		while (argv[argc] != NULL) {
+			argc++;
+		}
+		char **new_argv = (char **)malloc(sizeof(char *) * (argc + 2));
+		new_argv[0] = "/proc/self/exe";
+		for (size_t i = 0; i < argc; i++) {
+			new_argv[i + 1] = argv[i];
+		}
+		new_argv[argc + 1] = NULL;
+		execv(new_argv[0], new_argv);
+		free(new_argv);
+		_exit(CTH_EXIT_FAILURE);
+	}
+	int status = 0;
+	waitpid(pid, &status, 0);
+	return WEXITSTATUS(status);
+}
+static struct cth_result *cth_exec_block_with_file_input(char **argv, int input_fd, bool get_output, void (*progress)(float, int), int progress_line_num)
+{
+	/*
+	 * Exec the command in blocking mode, with file descriptor input and optional stdout/stderr capture.
+	 * argv: The command and its arguments, NULL-terminated array of strings.
+	 * fd: The file descriptor to read input from, should be readable.
+	 * get_output: If true, capture stdout and stderr output.
+	 * progress: A callback function to report progress, can be NULL.
+	 */
+	struct timeval start_time, end_time;
+	gettimeofday(&start_time, NULL);
+	if (input_fd < 0) {
+		return NULL;
+	}
+	// Create pipes for stdin, stdout, stderr.
+	int stdin_pipe[2] = { -1, -1 };
+	int stdout_pipe[2] = { -1, -1 };
+	int stderr_pipe[2] = { -1, -1 };
+	if (pipe(stdin_pipe) < 0) {
+		return NULL;
+	}
+	// Set write end of stdin pipe to non-blocking.
+	int flags = fcntl(stdin_pipe[1], F_GETFL, 0);
+	if (flags != -1) {
+		fcntl(stdin_pipe[1], F_SETFL, flags | O_NONBLOCK);
+	}
+	if (get_output) {
+		if (pipe(stdout_pipe) < 0) {
+			if (stdin_pipe[0] != -1) {
+				close(stdin_pipe[0]);
+				close(stdin_pipe[1]);
+			}
+			return NULL;
+		}
+		if (pipe(stderr_pipe) < 0) {
+			if (stdin_pipe[0] != -1) {
+				close(stdin_pipe[0]);
+				close(stdin_pipe[1]);
+			}
+			if (stdout_pipe[0] != -1) {
+				close(stdout_pipe[0]);
+				close(stdout_pipe[1]);
+			}
+			return NULL;
+		}
+	}
+	pid_t pid = fork();
+	// Error handling.
+	if (pid < 0) {
+		if (stdin_pipe[0] != -1) {
+			close(stdin_pipe[0]);
+			close(stdin_pipe[1]);
+		}
+		if (stdout_pipe[0] != -1) {
+			close(stdout_pipe[0]);
+			close(stdout_pipe[1]);
+		}
+		if (stderr_pipe[0] != -1) {
+			close(stderr_pipe[0]);
+			close(stderr_pipe[1]);
+		}
+		return NULL;
+	}
+	if (pid == 0) {
+		// Child process.
+		close(stdin_pipe[1]);
+		dup2(stdin_pipe[0], STDIN_FILENO);
+		close(stdin_pipe[0]);
+		if (get_output) {
+			close(stdout_pipe[0]);
+			dup2(stdout_pipe[1], STDOUT_FILENO);
+			close(stdout_pipe[1]);
+			close(stderr_pipe[0]);
+			dup2(stderr_pipe[1], STDERR_FILENO);
+			close(stderr_pipe[1]);
+		} else {
+			int fd = open("/dev/null", O_WRONLY);
+			if (fd >= 0) {
+				dup2(fd, STDOUT_FILENO);
+				dup2(fd, STDERR_FILENO);
+				if (fd > 2) {
+					close(fd);
+				}
+			}
+		}
+		execvp(argv[0], argv);
+		close(STDIN_FILENO);
+		close(STDOUT_FILENO);
+		close(STDERR_FILENO);
+		_exit(CTH_EXIT_FAILURE);
+	}
+	// Parent process.
+	if (get_output) {
+		close(stdout_pipe[1]);
+		close(stderr_pipe[1]);
+	}
+	struct cth_result *res = cth_new(pid, -1);
+	if (res == NULL) {
+		// Free pipes
+		close(stdin_pipe[0]);
+		close(stdin_pipe[1]);
+		if (get_output) {
+			close(stdout_pipe[0]);
+			close(stderr_pipe[0]);
+		}
+		return NULL;
+	}
+	// Prgoress callback setup
+	float progress_total = 0.0f;
+	// Buffers for stdout and stderr.
+	char *stdout_buf = NULL;
+	char *stderr_buf = NULL;
+	size_t stdout_size = 0;
+	size_t stderr_size = 0;
+	size_t stdout_cap = 0;
+	size_t stderr_cap = 0;
+	size_t BUF_CHUNK = 1024 * 4;
+	char input_buf[BUF_CHUNK + 1];
+	// poll loop to handle stdin, stdout, stderr.
+	struct pollfd pfds[3];
+	int nfds = 0;
+	int stdin_idx = -1;
+	int stdout_idx = -1;
+	int stderr_idx = -1;
+	pfds[nfds].fd = stdin_pipe[1];
+	pfds[nfds].events = POLLOUT;
+	stdin_idx = nfds++;
+	if (get_output) {
+		pfds[nfds].fd = stdout_pipe[0];
+		pfds[nfds].events = POLLIN;
+		stdout_idx = nfds++;
+		pfds[nfds].fd = stderr_pipe[0];
+		pfds[nfds].events = POLLIN;
+		stderr_idx = nfds++;
+	}
+	ssize_t input_written = 0;
+	ssize_t input_len = 0;
+	struct stat st;
+	if (fstat(input_fd, &st) == 0) {
+		if (S_ISREG(st.st_mode) || S_ISFIFO(st.st_mode)) {
+			input_len = st.st_size;
+		}
+	}
+	// Loop until all fds are closed.
+	while (nfds > 0) {
+		// Check if child exited before poll
+		int status = 0;
+		pid_t wait_ret = waitpid(pid, &status, WNOHANG);
+		if (wait_ret == pid) {
+			res->exited = true;
+			if (WIFEXITED(status)) {
+				res->exit_code = WEXITSTATUS(status);
+			} else if (WIFSIGNALED(status)) {
+				res->exit_code = 128 + WTERMSIG(status);
+			} else {
+				res->exit_code = -1;
+			}
+			// Continue reading stdout/stderr
+			if (get_output && stdout_idx != -1) {
+				ssize_t n;
+				while ((n = read(stdout_pipe[0], stdout_buf ? stdout_buf + stdout_size : NULL, BUF_CHUNK)) > 0) {
+					if (stdout_cap - stdout_size < (size_t)n) {
+						stdout_cap = stdout_cap ? stdout_cap * 2 : BUF_CHUNK;
+						stdout_buf = realloc(stdout_buf, stdout_cap);
+					}
+					if (stdout_buf == NULL) {
+						// realloc failed
+						break;
+					}
+					memcpy(stdout_buf + stdout_size, stdout_buf + stdout_size, n);
+					stdout_size += n;
+				}
+				close(stdout_pipe[0]);
+				stdout_idx = -1;
+			}
+			if (get_output && stderr_idx != -1) {
+				ssize_t n = 0;
+				while ((n = read(stderr_pipe[0], stderr_buf ? stderr_buf + stderr_size : NULL, BUF_CHUNK)) > 0) {
+					if (stderr_cap - stderr_size < (size_t)n) {
+						stderr_cap = stderr_cap ? stderr_cap * 2 : BUF_CHUNK;
+						stderr_buf = realloc(stderr_buf, stderr_cap);
+					}
+					memcpy(stderr_buf + stderr_size, stderr_buf + stderr_size, n);
+					stderr_size += n;
+				}
+				close(stderr_pipe[0]);
+				stderr_idx = -1;
+			}
+			if (stdin_idx != -1) {
+				close(stdin_pipe[1]);
+				stdin_idx = -1;
+			}
+			// Set output buffers to result (if any data was read)
+			if (get_output) {
+				if (stdout_buf) {
+					stdout_buf = realloc(stdout_buf, stdout_size + 1);
+					stdout_buf[stdout_size] = 0;
+					res->stdout_ret = stdout_buf;
+				}
+				if (stderr_buf) {
+					stderr_buf = realloc(stderr_buf, stderr_size + 1);
+					stderr_buf[stderr_size] = 0;
+					res->stderr_ret = stderr_buf;
+				}
+			}
+			return res;
+		}
+		int ret = poll(pfds, nfds, -1);
+		if (ret < 0 && errno == EINTR) {
+			continue;
+		}
+		if (ret < 0) {
+			break;
+		}
+		if (progress != NULL) {
+			float progress_now = (float)input_written / (float)(input_len ? input_len : 1);
+			if (progress_now - 0.005f > progress_total) {
+				progress(progress_now, progress_line_num);
+				progress_total = progress_now;
+			}
+		}
+		// Write to stdin.
+		if (stdin_idx != -1 && (pfds[stdin_idx].revents & POLLOUT)) {
+			ssize_t r = read(input_fd, input_buf, BUF_CHUNK);
+			if (r > 0) {
+				ssize_t n = write(stdin_pipe[1], input_buf, r);
+				if (n > 0) {
+					input_written += n;
+				} else if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+					continue;
+				} else {
+					close(stdin_pipe[1]);
+					for (int i = stdin_idx + 1; i < nfds; ++i) {
+						pfds[i - 1] = pfds[i];
+					}
+					nfds--;
+					if (stdout_idx > stdin_idx) {
+						stdout_idx--;
+					}
+					if (stderr_idx > stdin_idx) {
+						stderr_idx--;
+					}
+					stdin_idx = -1;
+				}
+			} else if (r == 0 || (r < 0 && errno != EAGAIN && errno != EWOULDBLOCK)) {
+				// EOF or read error (not EAGAIN): close stdin_pipe[1] and remove from poll
+				close(stdin_pipe[1]);
+				for (int i = stdin_idx + 1; i < nfds; ++i) {
+					pfds[i - 1] = pfds[i];
+				}
+				nfds--;
+				if (stdout_idx > stdin_idx) {
+					stdout_idx--;
+				}
+				if (stderr_idx > stdin_idx) {
+					stderr_idx--;
+				}
+				stdin_idx = -1;
+			}
+		}
+		// POLLHUP or POLLERR for stdin.
+		if (stdin_idx != -1 && (pfds[stdin_idx].revents & (POLLHUP | POLLERR))) {
+			close(stdin_pipe[1]);
+			// remove stdin_idx from pfds.
+			for (int i = stdin_idx + 1; i < nfds; ++i) {
+				pfds[i - 1] = pfds[i];
+			}
+			nfds--;
+			if (stdout_idx > stdin_idx) {
+				stdout_idx--;
+			}
+			if (stderr_idx > stdin_idx) {
+				stderr_idx--;
+			}
+			stdin_idx = -1;
+		}
+		// Read from stdout.
+		if (get_output && stdout_idx != -1 && (pfds[stdout_idx].revents & POLLIN)) {
+			if (stdout_cap - stdout_size < BUF_CHUNK) {
+				stdout_cap = stdout_cap ? stdout_cap * 2 : BUF_CHUNK;
+				stdout_buf = realloc(stdout_buf, stdout_cap);
+			}
+			ssize_t n = read(stdout_pipe[0], stdout_buf + stdout_size, BUF_CHUNK);
+			if (n > 0) {
+				stdout_size += n;
+			} else {
+				close(stdout_pipe[0]);
+				// remove stdout_idx from pfds.
+				for (int i = stdout_idx + 1; i < nfds; ++i) {
+					pfds[i - 1] = pfds[i];
+				}
+				nfds--;
+				if (stderr_idx > stdout_idx) {
+					stderr_idx--;
+				}
+				stdout_idx = -1;
+			}
+		}
+		// POLLHUP or POLLERR for stdout.
+		if (get_output && stdout_idx != -1 && (pfds[stdout_idx].revents & (POLLHUP | POLLERR))) {
+			close(stdout_pipe[0]);
+			// remove stdout_idx from pfds.
+			for (int i = stdout_idx + 1; i < nfds; ++i) {
+				pfds[i - 1] = pfds[i];
+			}
+			nfds--;
+			if (stderr_idx > stdout_idx) {
+				stderr_idx--;
+			}
+			stdout_idx = -1;
+		}
+		// Read from stderr.
+		if (get_output && stderr_idx != -1 && (pfds[stderr_idx].revents & POLLIN)) {
+			if (stderr_cap - stderr_size < BUF_CHUNK) {
+				stderr_cap = stderr_cap ? stderr_cap * 2 : BUF_CHUNK;
+				stderr_buf = realloc(stderr_buf, stderr_cap);
+			}
+			ssize_t n = read(stderr_pipe[0], stderr_buf + stderr_size, BUF_CHUNK);
+			if (n > 0) {
+				stderr_size += n;
+			} else {
+				close(stderr_pipe[0]);
+				// remove stderr_idx from pfds.
+				for (int i = stderr_idx + 1; i < nfds; ++i) {
+					pfds[i - 1] = pfds[i];
+				}
+				nfds--;
+				stderr_idx = -1;
+			}
+		}
+		// POLLHUP or POLLERR for stderr.
+		if (get_output && stderr_idx != -1 && (pfds[stderr_idx].revents & (POLLHUP | POLLERR))) {
+			close(stderr_pipe[0]);
+			// remove stderr_idx from pfds.
+			for (int i = stderr_idx + 1; i < nfds; ++i) {
+				pfds[i - 1] = pfds[i];
+			}
+			nfds--;
+			stderr_idx = -1;
+		}
+		// Check if all fds are closed.
+		if ((stdin_idx == -1) && (stdout_idx == -1) && (stderr_idx == -1)) {
+			if (progress != NULL) {
+				progress(1.0f, progress_line_num);
+			}
+			break;
+		}
+	}
+	// Parent process, wait for child to exit.
+	int status = 0;
+	// Wait for child process, handle EINTR
+	while (waitpid(pid, &status, 0) < 0) {
+		if (errno == EINTR) {
+			continue;
+		}
+		break;
+	}
+	gettimeofday(&end_time, NULL);
+	// Calculate time used in microseconds.
+	res->time_used = (end_time.tv_sec - start_time.tv_sec) * 1000000 + (end_time.tv_usec - start_time.tv_usec);
+	res->exited = true;
+	if (WIFEXITED(status)) {
+		res->exit_code = WEXITSTATUS(status);
+	} else if (WIFSIGNALED(status)) {
+		res->exit_code = 128 + WTERMSIG(status);
+	} else {
+		res->exit_code = -1;
+	}
+	// Set output buffers to result.
+	if (get_output) {
+		// Make sure buffers are null-terminated.
+		if (stdout_buf) {
+			stdout_buf = realloc(stdout_buf, stdout_size + 1);
+			stdout_buf[stdout_size] = 0;
+			res->stdout_ret = stdout_buf;
+		}
+		if (stderr_buf) {
+			stderr_buf = realloc(stderr_buf, stderr_size + 1);
+			stderr_buf[stderr_size] = 0;
+			res->stderr_ret = stderr_buf;
+		}
+	}
+	if (progress != NULL) {
+		progress(-1.0, progress_line_num);
+	}
+	return res;
+}
+// API function.
+struct cth_result *cth_exec_with_file_input(char **argv, int fd, bool block, bool get_output, void (*progress)(float, int), int progress_line_num)
+{
+	/*
+	 * Exec the command with given arguments, using the given file descriptor as stdin.
+	 * argv: The command and its arguments, NULL-terminated array of strings.
+	 * fd: The file descriptor to use as stdin, should be valid and open for reading.
+	 * block: If true, wait for the command to finish and return the result.
+	 *        If false, return immediately (not implemented yet).
+	 * get_output: If true, capture stdout and stderr output.
+	 * progress: A callback function to report progress, can be NULL.
+	 *           The function will be called with a float value between 0.0 and 1.0,
+	 *           representing the progress of reading the input file, and an integer
+	 *           line number to indicate where to print the progress (for multi-line progress).
+	 * progress_line_num: The line number to use for progress reporting, if progress is not NULL.
+	 * Returns a cth_result structure on success, NULL on failure.
+	 * The caller is responsible for freeing the result using cth_free_result().
+	 */
+	if (argv == NULL || argv[0] == NULL) {
+		return NULL;
+	}
+	// For now, only blocking mode is implemented.
+	if (block) {
+		return cth_exec_block_with_file_input(argv, fd, get_output, progress, progress_line_num);
+	}
+	// TODO
+	cth_debug(printf("cth_exec_with_file_input: non-blocking mode not implemented yet\n"););
+	return NULL;
+}
+void cth_show_progress(float progress, int line_num)
+{
+	/*
+	 * This is an example progress reporting function.
+	 * Show a progress bar in the terminal.
+	 * progress: A float value between 0.0 and 1.0, representing the progress.
+	 *           If progress < 0.0, clear the progress bar.
+	 *           If progress > 1.0, treat as 1.0.
+	 * line_num: The line number to use for progress reporting, if > 0.
+	 *           If line_num <= 0, use the current line.
+	 * Note: This function uses ANSI escape codes to move the cursor.
+	 */
+	if (progress < 0.0) {
+		printf("\n");
+		fflush(stdout);
+		return;
+	}
+	if (progress > 1.0) {
+		progress = 1.0;
+	}
+	const int bar_width = 50;
+	int pos = (int)(bar_width * progress);
+	// Move cursor to the specified line.
+	if (line_num > 0) {
+		printf("\033[%dA", line_num);
+	}
+	printf("[");
+	for (int i = 0; i < bar_width; ++i) {
+		if (i < pos) {
+			printf("=");
+		} else if (i == pos) {
+			printf(">");
+		} else {
+			printf(" ");
+		}
+	}
+	printf("] %3d %%\r", (int)(progress * 100.0));
+	fflush(stdout);
+	// Move cursor back to original position.
+	if (line_num > 0) {
+		printf("\033[%dB", line_num);
+	}
+}
+/////////////////////
+///////catsh.c///////
+/////////////////////
