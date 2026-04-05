@@ -51,6 +51,7 @@ And, don't forget to `rurima ota` to get the latest build!
 # What's new:
 - We have a unified `pull` command to get images from dockerhub or LXC mirror now.       
 - Some other OCI compatible registry like ghcr.io could work with `-f/--fallback` option enabled now.      
+- We will automatically force enable fallback mode for ghcr.io now.      
 # Backward compatibility:
 We promise that rurima has backward compatibility of documented parts since v0.9.x, all unstable parts will be explicitly marked as WIP or unstable, and ruri has already been backward compatible. Users can always keep `rurima ota` to get the latest build.           
 For any issue, please notify us, and we will fix it ASAP.                 

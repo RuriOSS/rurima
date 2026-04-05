@@ -233,6 +233,11 @@ void rurima_docker(int argc, char **_Nonnull argv)
 			rurima_warning("{yellow}You use it as your own risk.\n")
 		}
 	}
+	// For ghcr.io, we enable fallback mode by default.
+	if (strncmp(mirror, "ghcr.io", 7) == 0) {
+		rurima_warning("{yellow}ghcr.io detected, enabling fallback mode by default for compatibility.\n");
+		fallback = true;
+	}
 	if (strcmp(argv[0], "search") == 0) {
 		if (image == NULL) {
 			rurima_error("{red}No image specified!\n");
