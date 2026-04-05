@@ -69,6 +69,7 @@ Subcommands:
   search: Search images from DockerHub.
   tag:    Search tags from DockerHub.
   pull:   Pull image from DockerHub.
+  load:   Load rootfs from tarball.
   config: Get config of image from DockerHub.
   arch:   Search architecture of image from DockerHub.
   help:   Show help message.

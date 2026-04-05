@@ -298,10 +298,6 @@ int main(int argc, char **argv)
 			rurima_netns_wrapper(argc - i - 1, &argv[i + 1]);
 			return 0;
 		}
-		if (strcmp(argv[i], "load") == 0) {
-			rurima_load_rootfs(argc - i - 1, &argv[i + 1]);
-			return 0;
-		}
 		if (strcmp(argv[i], "QwQ") == 0) {
 			rurima_QwQ();
 			return 0;

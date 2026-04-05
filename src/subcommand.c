@@ -121,6 +121,11 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
  */
 void rurima_docker(int argc, char **_Nonnull argv)
 {
+	// rurima docker load
+	if (argc > 0 && (strcmp(argv[0], "load") == 0)) {
+		rurima_load_rootfs(argc - 1, &argv[1]);
+		return;
+	}
 	if (!rurima_jq_exists()) {
 		rurima_error("{red}jq is not installed!\n");
 	}
@@ -332,6 +337,7 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		cprintf("{base}  search: Search images from DockerHub.\n");
 		cprintf("{base}  tag:    Search tags from DockerHub.\n");
 		cprintf("{base}  pull:   Pull image from DockerHub.\n");
+		cprintf("{base}  load:   Load rootfs from tarball.\n");
 		cprintf("{base}  config: Get config of image from DockerHub.\n");
 		cprintf("{base}  arch:   Search architecture of image from DockerHub.\n");
 		cprintf("{base}  help:   Show help message.\n");
