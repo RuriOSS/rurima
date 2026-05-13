@@ -1,5 +1,8 @@
 # Undocumented part:
 The `load`, `run`, `sfx` and `netns` subcommand is WIP, it should not be used by users.    
+# $PATH injection:
+rurima will automatically add /path/to/rurima/ to the top of $PATH.        
+So you can just put required binaries like `tar/curl/jq/file` under the same dir of rurima, or do some wrapper script hacking.            
 # Image source:
 rurima currently supports both lxc-mirror and dockerhub as container image source.      
 # Unified image puller:
