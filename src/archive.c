@@ -329,8 +329,15 @@ int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir)
 	rurima_fork_rexec(rexec_args);
 	if (!du_found()) {
 		rurima_warning("{yellow}du not found, progress will not be shown.\n");
-		int exstat = tar_backup__(file, dir);
-		return exstat;
+		pid_t pid = fork();
+		if (pid > 0) {
+			int status;
+			waitpid(pid, &status, 0);
+			return WEXITSTATUS(status);
+		} else {
+			int exstat = tar_backup__(file, dir);
+			exit(exstat);
+		}
 	}
 	cprintf("{base}Getting total size to backup\n");
 	off_t totalsize = rurima_get_dir_file_size(dir);
@@ -351,7 +358,7 @@ int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir)
 			usleep(100);
 		}
 		show_progress(1.0);
-		return status;
+		return WEXITSTATUS(status);
 	} else {
 		int exstat = tar_backup__(file, dir);
 		exit(exstat);

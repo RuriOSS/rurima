@@ -49,10 +49,10 @@ void end_loading_animation(void)
 {
 	if (loading_animation_pid > 0) {
 		kill(loading_animation_pid, SIGINT);
-		loading_animation_pid = 0;
 	}
 	waitpid(loading_animation_pid, NULL, 0);
 	fflush(stdout);
+	loading_animation_pid = 0;
 }
 void loading_animation(char *msg)
 {

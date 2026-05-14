@@ -55,6 +55,7 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 	rexec_argv[0] = NULL;
 	for (int i = 0; try_mirrorlist[i] != NULL; i++) {
 		cprintf("{base}Trying mirror: {cyan}%s\n", try_mirrorlist[i]);
+		rexec_argv[0] = NULL;
 		rurima_add_argv(&rexec_argv, "docker");
 		rurima_add_argv(&rexec_argv, "pull");
 		rurima_add_argv(&rexec_argv, "-i");
@@ -812,14 +813,14 @@ void rurima_load_rootfs(int argc, char **argv)
 	char manifest_path[PATH_MAX];
 	sprintf(manifest_path, "%s/manifest.json", tmp_dir);
 	FILE *manifest_file = fopen(manifest_path, "r");
+	if (!manifest_file) {
+		rurima_error("{red}Failed to open manifest.json!\n");
+	}
 	struct stat st;
 	if (fstat(fileno(manifest_file), &st) != 0) {
 		rurima_error("{red}Failed to stat manifest.json!\n");
 	}
 	char *manifest_content = malloc(st.st_size + 1);
-	if (!manifest_file) {
-		rurima_error("{red}Failed to open manifest.json!\n");
-	}
 	fread(manifest_content, 1, st.st_size, manifest_file);
 	manifest_content[st.st_size] = 0;
 	fclose(manifest_file);
