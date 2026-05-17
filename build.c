@@ -837,7 +837,7 @@ int main(int argc, char **argv)
 	check_and_add_lib("-lpthread", false);
 	build();
 	remove_test_dot_c();
-	printf("\n\nThis program has Super Neko Powers! >w<\n")
+	printf("\n\nThis program has Super Neko Powers! >w<\n");
 	return 0;
 }
 
