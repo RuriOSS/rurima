@@ -43,9 +43,9 @@ static void panic(int sig)
 	cfprintf(stderr, "{base}");
 	cfprintf(stderr, "{base}%s\n", "  .^.   .^.");
 	cfprintf(stderr, "{base}%s\n", "  /⋀\\_ﾉ_/⋀\\");
-	cfprintf(stderr, "{base}%s\n", " /ﾉｿﾉ\\ﾉｿ丶)|");
+	cfprintf(stderr, "{base}%s\n", " /ﾉｿﾉ\\ﾉｿ丶メ");
 	cfprintf(stderr, "{base}%s\n", " ﾙﾘﾘ >  x )ﾘ");
-	cfprintf(stderr, "{base}%s\n", "ﾉノ㇏  ^  ﾉ|ﾉ");
+	cfprintf(stderr, "{base}%s\n", "ﾉノ㇏  ^  ﾉﾉ");
 	cfprintf(stderr, "{base}%s\n", "      ⠁⠁");
 	cfprintf(stderr, "{base}%s\n", "RURIMA ERROR MESSAGE");
 	cfprintf(stderr, "{base}Seems that it's time to abort.\n");
