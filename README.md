@@ -22,10 +22,13 @@
 * This program has no Super Cow Powers.
 ```
 This project does not follow OCI standard and can only be a `PARTIAL` replacement of docker, this project is still under development.       
-For Android users, You might need to root your phone before using rurima, some container might not work properly with proot.         
-# Presets:
-We are working on some presets for using rurima to build your own projects, you can find them in the [presets](presets) directory.      
-The first preset is for running debian vm with avf on MTK devices, and we will add more presets in the future, PRs are welcome!      
+For Android users, You might need to root your phone before using rurima, some container might not work properly with proot.          
+# About:
+So, what is rurima?       
+The enhanced version of ruri.          
+[ruri](https://github.com/Moe-hacker/ruri) only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
+And it will be a more powerful container manager in the fulture.            
+With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
 # Features:
 - Get rootfs images from dockerhub or LXC mirror.
 - Automatic parse docker image config and convert to ruri cmdline.
@@ -35,32 +38,104 @@ The first preset is for running debian vm with avf on MTK devices, and we will a
 - Static binary for multiple architectures.
 - Built-in OTA(upgrade) feature.
 
-In a word, rurima is a lightweight container implementation, it tries to get the most features of docker with the least dependencies, even when your kernel does not support cgroups or namespaces.      
+In a word, rurima is a lightweight container implementation, it tries to get the most features of docker with the least dependencies, even when your kernel does not support cgroups or namespaces.   
+# Demo:
 
-# Terms of Use:
-See [TERMS_OF_USE.md](TERMS_OF_USE.md)
-# Full usage doc:
-For a full usage documentation,    
-See [USAGE.md](doc/USAGE.md).     
-# FAQ:
-See [FAQ.md](doc/FAQ.md).
-# Send us your feedback!
-Your use case, your suggestions, anyway, we would love to hear from you!     
-[Discussions](https://github.com/RuriOSS/rurima/discussions/16)      
-And, don't forget to `rurima ota` to get the latest build!      
+<details>
+<summary>Click to expand</summary>
+
+```text
+~ $ sudo rurima pull openlistteam/openlist ./openlist
+Pulling 20158f18ba671f0b as layer-0
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-0
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling ec81343d31bcd4b6 as layer-1
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-1
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling 889dce16043c6e0b as layer-2
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-2
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling 26e754cd7c62b57e as layer-3
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-3
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling 4f4fb700ef54461c as layer-4
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-4
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling bd69fdf7a20439e0 as layer-5
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-5
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling ec5dfd7cdbbd5a97 as layer-6
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-6
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling 53c5100b64211b73 as layer-7
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-7
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Pulling 4f4fb700ef54461c as layer-8
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+Extracting layer-8
+[///////////////////////////////////////////////////////////////////////////////] 100.00%
+
+Config:
+  Workdir:
+    /opt/openlist/
+  Env:
+    PATH = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+    UMASK = 022
+    RUN_ARIA2 = false
+  Command:
+    /entrypoint.sh
+  Entrypoint:
+    NULL
+Run with ruri:
+
+rurima r -w -W /opt/openlist/ -e "PATH" "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" -e "UMASK" "022" -e "RUN_ARIA2" "false" /data/data/com.termux/files/home/openlist /entrypoint.sh
+
+~ $ sudo rurima r -w -W /opt/openlist/ -e "PATH" "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" -e "UMASK" "022" -e "RUN_ARIA2" "false" /data/data/com.termux/files/home/openlist /entrypoint.sh
+INFO[2026-05-28 15:08:49] reading config file: /opt/openlist/data/config.json
+INFO[2026-05-28 15:08:49] config file not exists, creating default config file
+INFO[2026-05-28 15:08:49] load config from env with prefix:
+INFO[2026-05-28 15:08:49] total memory: 15371MB, available: 4204MB
+INFO[2026-05-28 15:08:49] min free memory: 1024MB
+INFO[2026-05-28 15:08:49] max block limit: 64MB
+INFO[2026-05-28 15:08:49] auto memory limit: 4MB
+INFO[2026-05-28 15:08:49] init logrus...
+Successfully created the admin user and the initial password is: LfHyicxp
+start HTTP server @ 0.0.0.0:5244
+```
+
+</details>
+
+- Sudo is required on Android phones.
+- Enable `--privileged` option for ruri (`sudo rurima r --privileged [other options]`) might fix some compatibility issues, but it is not recommended for security reasons.
+
 # What's new:
 - We have a unified `pull` command to get images from dockerhub or LXC mirror now.       
 - Some other OCI compatible registry like ghcr.io could work with `-f/--fallback` option enabled now.      
 - We will automatically force enable fallback mode for ghcr.io now.      
 # Backward compatibility:
 We promise that rurima has backward compatibility of documented parts since v0.9.x, all unstable parts will be explicitly marked as WIP or unstable, and ruri has already been backward compatible. Users can always keep `rurima ota` to get the latest build.           
-For any issue, please notify us, and we will fix it ASAP.                 
-# About:
-So, what is rurima?       
-The enhanced version of ruri.          
-[ruri](https://github.com/Moe-hacker/ruri) only focus on running container, but rurima can also provide the function of getting rootfs image and backup/restore.          
-And it will be a more powerful container manager in the fulture.            
-With the `docker` and `lxc` subcommand of rurima, you can search & get & unpack images from dockerhub or LXC mirror easily.       
+# Terms of Use:
+See [TERMS_OF_USE.md](TERMS_OF_USE.md)
+# Full usage doc:
+For a full usage documentation,    
+See [USAGE.md](doc/USAGE.md).     
+# FAQ:
+See [FAQ.md](doc/FAQ.md).   
+# Send us your feedback!
+Your use case, your suggestions, anyway, we would love to hear from you!     
+[Discussions](https://github.com/RuriOSS/rurima/discussions/16)      
+And, don't forget to `rurima ota` to get the latest build!      
+# Presets:
+We are working on some presets for using rurima to build your own projects, you can find them in the [presets](presets) directory.      
+The first preset is for running debian vm with avf on MTK devices, and we will add more presets in the future, PRs are welcome!     
 # Download:
 You can get rurima binary (staticly linked) for arm64, armv7, armhf, riscv64, i386, loong64, s390x, ppc64le and x86_64 from the release page.     
 Or run the follwing command to get rurima to ./rurima and ./rurima-dbg(debug version):     
@@ -84,11 +159,6 @@ For Alpine based system, run:
 ```
 apk add wget curl jq coreutils file proot tar xz gzip
 ```
-# About suid or caps:
-Rurima does not allow to set any suid/sgid (with root) or capability on it, it will check it in main() and error() if detected these unsafe settings.      
-So, please always use sudo instead.     
-# Reporting bugs:
-Please use the debug version(rurima-dbg) in release to get debug logs, and please tell me the command you run to cause the unexpected behavior you think!                     
 # Dependent:   
 rurima needs tar, xz, gzip, file, you can find these static binary for aarch64, armv7, x86_64, i386 or riscv64 in：      
 [tar-static](https://github.com/Moe-sushi/tar-static)      
@@ -112,6 +182,11 @@ So that you download:
 https://mirrors.tuna.tsinghua.edu.cn/alpine/edge/testing/aarch64/proot-static-5.4.0-r1.apk
 ```
 and finally, tar -xvf *.apk to unpack it. So you got proot.static, rename it to proot and put it in your $PATH.           
+# About suid or caps:
+Rurima does not allow to set any suid/sgid (with root) or capability on it, it will check it in main() and error() if detected these unsafe settings.      
+So, please always use sudo instead.     
+# Reporting bugs:
+Please use the debug version(rurima-dbg) in release to get debug logs, and please tell me the command you run to cause the unexpected behavior you think!                     
 # TODO:
 
 Manage ruri containers and configs.       
