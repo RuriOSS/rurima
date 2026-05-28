@@ -80,6 +80,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}tar :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(curl_command);
 	if (result == NULL) {
 		cprintf("{base}curl : {red}not found\n");
@@ -87,6 +88,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}curl :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(file_command);
 	if (result == NULL) {
 		cprintf("{base}file : {red}not found\n");
@@ -94,6 +96,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}file :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(file_command_2);
 	if (result == NULL) {
 		cprintf("{base}file : {red}not support --brief --mime-type\n");
@@ -101,6 +104,7 @@ static void rurima_dep_info(void)
 		cprintf("\n{blue}file --brief --mime-type /proc/self/exe\n%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(gz_command);
 	if (result == NULL) {
 		cprintf("{base}gzip : {red}not found\n");
@@ -108,6 +112,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}gzip :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(xz_command);
 	if (result == NULL) {
 		cprintf("{base}xz : {red}not found\n");
@@ -115,6 +120,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}xz :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(proot_command);
 	if (result == NULL) {
 		cprintf("{base}proot : {yellow}not found\n");
@@ -122,6 +128,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}proot :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(sha256_command);
 	if (result == NULL) {
 		cprintf("{base}sha256sum : {yellow}not found\n");
@@ -129,6 +136,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}sha256sum :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 	result = rurima_fork_execvp_get_stdout(jq_command);
 	if (result == NULL) {
 		cprintf("{base}jq : {yellow}not found\n");
@@ -136,6 +144,7 @@ static void rurima_dep_info(void)
 		cprintf("{base}jq :{clear}{green} found\n{blue}%s", result);
 	}
 	free(result);
+	result = NULL;
 }
 static void detect_suid_or_capability(void)
 {
@@ -197,7 +206,7 @@ static void reset_path_env(void)
 	if (new_path_env == NULL) {
 		return;
 	}
-	sprintf(new_path_env, "%s:%s", exe_path, path_env);
+	snprintf(new_path_env, strlen(path_env) + strlen(exe_path) + 2, "%s:%s", exe_path, path_env);
 	setenv("PATH", new_path_env, 1);
 	free(new_path_env);
 }
