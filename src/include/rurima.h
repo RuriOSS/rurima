@@ -49,6 +49,7 @@
 #include <dirent.h>
 #include <sys/time.h>
 #include <float.h>
+#include <stddef.h>
 // This program need be linked with -lcap.
 #include <sys/capability.h>
 // Bool!!!
