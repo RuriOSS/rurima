@@ -28,6 +28,7 @@
  *
  */
 #include "include/rurima.h"
+// NOLINTBEGIN
 bool disable_rurima_log = false;
 // clang-format off
 struct RURIMA_CONFIG rurima_global_config = {
@@ -36,6 +37,7 @@ struct RURIMA_CONFIG rurima_global_config = {
 	.quiet = false,
 	.no_progress = false,
 };
+// NOLINTEND
 // clang-format on
 static void show_help(void)
 {
@@ -183,7 +185,7 @@ static void reset_path_env(void)
 		return;
 	}
 	exe_path[PATH_MAX - 1] = '\0';
-	for (int i = strlen(exe_path) - 1; i >= 0; i--) {
+	for (size_t i = strlen(exe_path) - 1; i >= 0; i--) {
 		if (exe_path[i] == '/') {
 			exe_path[i] = '\0';
 			break;

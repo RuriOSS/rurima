@@ -60,7 +60,7 @@ static void print_export_env(struct RURIMA_DOCKER *_Nonnull config)
 		printf("export %s=\"%s\"\n", config->env[i], config->env[i + 1]);
 	}
 }
-static void print_chroot_command(struct RURIMA_DOCKER *_Nonnull config, char *_Nullable savedir)
+static void print_chroot_command(struct RURIMA_DOCKER *_Nonnull config, const char *_Nullable savedir)
 {
 	/*
 	 * Print command to use chroot as runtime.
@@ -89,7 +89,7 @@ static void print_chroot_command(struct RURIMA_DOCKER *_Nonnull config, char *_N
 	}
 	printf("\n");
 }
-static void print_proot_command(struct RURIMA_DOCKER *_Nonnull config, char *_Nullable savedir)
+static void print_proot_command(struct RURIMA_DOCKER *_Nonnull config, const char *_Nullable savedir)
 {
 	/*
 	 * Print command to use proot as runtime.
@@ -116,7 +116,7 @@ static void print_proot_command(struct RURIMA_DOCKER *_Nonnull config, char *_Nu
 	}
 	printf("\n");
 }
-static void print_ruri_command(struct RURIMA_DOCKER *_Nonnull config, char *_Nullable savedir)
+static void print_ruri_command(struct RURIMA_DOCKER *_Nonnull config, const char *_Nullable savedir)
 {
 	/*
 	 * Print command to use ruri as runtime.
@@ -150,7 +150,7 @@ static void print_ruri_command(struct RURIMA_DOCKER *_Nonnull config, char *_Nul
 	}
 	printf("\n");
 }
-void rurima_show_docker_config(struct RURIMA_DOCKER *_Nonnull config, char *_Nullable savedir, char *_Nullable runtime, bool quiet)
+void rurima_show_docker_config(struct RURIMA_DOCKER *_Nonnull config, const char *_Nullable savedir, char *_Nullable runtime, bool quiet)
 {
 	/*
 	 * Show docker config.
@@ -411,9 +411,8 @@ static char *get_token(char *_Nonnull image, char *_Nullable mirror, bool fallba
 			rurima_log("{red}Can not get token, using homo magic token 1145141919810\n");
 			// We hope the server administrator is homo.
 			return strdup("1145141919810");
-		} else {
-			rurima_error("{red}Failed to get token!");
 		}
+		rurima_error("{red}Failed to get token!");
 	}
 	free(token_json);
 	rurima_log("{base}Token: {cyan}%s{clear}\n", ret);
@@ -532,14 +531,14 @@ static struct BLOBS *get_blobs(const char *_Nonnull image, const char *_Nonnull 
 	if (layers_orig == NULL) {
 		rurima_error("{red}Failed to get digest!\n");
 	}
-	size_t len = rurima_split_lines(layers_orig, &ret->blobs);
+	rurima_split_lines(layers_orig, &ret->blobs);
 	char **size_char = NULL;
 	char *jq_cmd_2[] = { "jq", "-r", ".[] | .size", NULL };
 	char *layers_size = rurima_call_jq(jq_cmd_2, layers);
 	if (layers_size == NULL) {
 		rurima_error("{red}Failed to get layers size!\n");
 	}
-	len = rurima_split_lines(layers_size, &size_char);
+	size_t len = rurima_split_lines(layers_size, &size_char);
 	ret->size = malloc(sizeof(size_t) * (len + 1));
 	for (size_t i = 0; i < len; i++) {
 		ret->size[i] = (size_t)strtoull(size_char[i], NULL, 10);
@@ -547,9 +546,9 @@ static struct BLOBS *get_blobs(const char *_Nonnull image, const char *_Nonnull 
 	for (size_t i = 0; i < len; i++) {
 		free(size_char[i]);
 	}
-	free(size_char);
-	free(layers_size);
-	free(layers_orig);
+	free((void *)size_char);
+	free((void *)layers_size);
+	free((void *)layers_orig);
 	if (len == 0) {
 		rurima_error("{red}Failed to get layers!\n");
 	}
@@ -842,7 +841,7 @@ static struct RURIMA_DOCKER *get_image_config(const char *_Nonnull image, const 
 				rurima_log("{base}Env[%d]: {cyan}%s{clear}\n", i, env[i]);
 				free(env[i]);
 			}
-			ret->env[len * 2] = NULL;
+			ret->env[(ptrdiff_t)(len * 2)] = NULL;
 			free(tmp);
 			free(env_from_json);
 		} else {
@@ -1014,9 +1013,9 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	for (size_t i = 0; blobs->blobs[i] != NULL; i++) {
 		free(blobs->blobs[i]);
 	}
-	free(blobs->blobs);
-	free(blobs);
-	free(config);
+	free((void *)blobs->blobs);
+	free((void *)blobs);
+	free((void *)config);
 	end_loading_animation();
 	return ret;
 }
@@ -1117,9 +1116,9 @@ static char *docker_search__(char *_Nonnull url)
 		free(is_offical[i]);
 	}
 	free(results);
-	free(name);
-	free(description);
-	free(is_offical);
+	free((void *)name);
+	free((void *)description);
+	free((void *)is_offical);
 	return next_url;
 }
 int rurima_docker_search(const char *_Nonnull image, const char *_Nonnull page_size, bool quiet, const char *_Nullable mirror)
@@ -1285,7 +1284,7 @@ static void docker_add_archlist__(char *_Nonnull arch, char ***_Nullable archlis
 		return;
 	}
 	if (*archlist == NULL) {
-		*archlist = malloc(sizeof(char *) * 3);
+		*archlist = (char **)malloc(sizeof(char *) * 3);
 		(*archlist)[0] = strdup(arch);
 		(*archlist)[1] = NULL;
 		return;
@@ -1296,6 +1295,8 @@ static void docker_add_archlist__(char *_Nonnull arch, char ***_Nullable archlis
 		}
 	}
 	size_t j = 0;
+	// NOLINTBEGIN
+	// TODO: WTH THE WARNING?
 	for (; (*archlist)[j] != NULL; j++)
 		;
 	*archlist = realloc(*archlist, sizeof(char *) * (j + 3));
@@ -1306,6 +1307,7 @@ static void docker_add_archlist__(char *_Nonnull arch, char ***_Nullable archlis
 			break;
 		}
 	}
+	// NOLINTEND
 }
 static void docker_print_arch(const char *_Nonnull image, char *const *_Nonnull arch, size_t len)
 {
@@ -1332,7 +1334,7 @@ static void docker_print_arch(const char *_Nonnull image, char *const *_Nonnull 
 	for (int i = 0; archlist[i] != NULL; i++) {
 		free(archlist[i]);
 	}
-	free(archlist);
+	free((void *)archlist);
 }
 int rurima_docker_search_arch(char *_Nonnull image, char *_Nonnull tag, char *_Nullable mirror, bool fallback)
 {
@@ -1371,7 +1373,7 @@ int rurima_docker_search_arch(char *_Nonnull image, char *_Nonnull tag, char *_N
 	for (size_t i = 0; i < len; i++) {
 		free(arch[i]);
 	}
-	free(arch);
+	free((void *)arch);
 	free(tmp);
 	return 0;
 }
@@ -1382,7 +1384,7 @@ void rurima_docker_print_config_from_json(const char *_Nonnull config, const cha
 	 * We just print the config from json string.
 	 */
 	struct RURIMA_DOCKER *ret = malloc(sizeof(struct RURIMA_DOCKER));
-	char *response = config;
+	const char *response = config;
 	{
 		char *jq_command_0[] = { "jq", "-r", "-j", ".architecture", NULL };
 		char *architecture = rurima_call_jq(jq_command_0, response);
@@ -1404,6 +1406,8 @@ void rurima_docker_print_config_from_json(const char *_Nonnull config, const cha
 		}
 	}
 	{
+		// NOLINTBEGIN
+		// TODO: WTH THE WARNING?
 		char *jq_command_2[] = { "jq", "-r", "-j", "-c", ".config.Env", NULL };
 		char *env_from_json = rurima_call_jq(jq_command_2, response);
 		rurima_log("{base}Env: {cyan}%s{clear}\n", env_from_json == NULL ? "NULL" : env_from_json);
@@ -1424,6 +1428,7 @@ void rurima_docker_print_config_from_json(const char *_Nonnull config, const cha
 		} else {
 			ret->env[0] = NULL;
 		}
+		// NOLINTEND
 	}
 	{
 		char *jq_command_3[] = { "jq", "-r", "-j", "-c", ".config.Entrypoint", NULL };
@@ -1463,5 +1468,4 @@ void rurima_docker_print_config_from_json(const char *_Nonnull config, const cha
 	}
 	rurima_show_docker_config(ret, savedir, "ruri", false);
 	rurima_free_docker_config(ret);
-	return;
 }

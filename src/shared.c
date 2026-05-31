@@ -28,12 +28,14 @@
  *
  */
 #include "include/rurima.h"
-void end_animation(int unused__)
+void end_animation(int __attribute((unused)) unused__)
 {
 	printf("\r\033[K\033[0m\033[?25h");
 	exit(0);
 }
+// NOLINTBEGIN
 pid_t loading_animation_pid = 0;
+// NOLINTEND
 void start_loading_animation(char *msg)
 {
 	if (rurima_global_config.no_progress) {
@@ -65,8 +67,9 @@ void loading_animation(char *msg)
 		fflush(stdout);
 		usleep(150000);
 		ptr++;
-		if (chr[ptr] == NULL)
+		if (chr[ptr] == NULL) {
 			ptr = 0;
+		}
 	}
 }
 bool proot_exist(void)
@@ -116,6 +119,7 @@ static char *get_dir_realpath(const char *_Nonnull dir)
 	 * Warning: free() the return value after use.
 	 */
 	char *ret = malloc(PATH_MAX + strlen(dir) + 1);
+	memset(ret, 0, PATH_MAX + strlen(dir) + 1);
 	if (strchr(dir, '/') == dir) {
 		sprintf(ret, "%s", dir);
 	} else {
@@ -254,97 +258,97 @@ char *rurima_docker_get_host_arch(void)
 	 * Do not free() the returned value.
 	 */
 	char *ret = NULL;
-#if defined(__aarch64__)
+#ifdef __aarch64__
 	ret = "arm64";
 #endif
-#if defined(__alpha__)
+#ifdef __alpha__
 	ret = "alpha";
 #endif
-#if defined(__arm__)
+#ifdef __arm__
 	ret = "arm";
 #endif
-#if defined(__armeb__)
+#ifdef __armeb__
 	ret = "arm";
 #endif
-#if defined(__cris__)
+#ifdef __cris__
 	ret = "cris";
 #endif
-#if defined(__hexagon__)
+#ifdef __hexagon__
 	ret = "hexagon";
 #endif
-#if defined(__hppa__)
+#ifdef __hppa__
 	ret = "hppa";
 #endif
-#if defined(__i386__)
+#ifdef __i386__
 	ret = "386";
 #endif
-#if defined(__loongarch64__)
+#ifdef __loongarch64__
 	ret = "loong64";
 #endif
-#if defined(__m68k__)
+#ifdef __m68k__
 	ret = "m68k";
 #endif
-#if defined(__microblaze__)
+#ifdef __microblaze__
 	ret = "microblaze";
 #endif
-#if defined(__mips__)
+#ifdef __mips__
 	ret = "mips";
 #endif
-#if defined(__mips64__)
+#ifdef __mips64__
 	ret = "mips64";
 #endif
-#if defined(__mips64el__)
+#ifdef __mips64el__
 	ret = "mips64el";
 #endif
-#if defined(__mipsel__)
+#ifdef __mipsel__
 	ret = "mipsel";
 #endif
-#if defined(__mipsn32__)
+#ifdef __mipsn32__
 	ret = "mipsn32";
 #endif
-#if defined(__mipsn32el__)
+#ifdef __mipsn32el__
 	ret = "mipsn32el";
 #endif
-#if defined(__ppc__)
+#ifdef __ppc__
 	ret = "ppc";
 #endif
-#if defined(__ppc64__)
+#ifdef __ppc64__
 	ret = "ppc64";
 #endif
-#if defined(__ppc64le__)
+#ifdef __ppc64le__
 	ret = "ppc64le";
 #endif
-#if defined(__riscv32__)
+#ifdef __riscv32__
 	ret = "riscv32";
 #endif
-#if defined(__riscv64__)
+#ifdef __riscv64__
 	ret = "riscv64";
 #endif
-#if defined(__s390x__)
+#ifdef __s390x__
 	ret = "s390x";
 #endif
-#if defined(__sh4__)
+#ifdef __sh4__
 	ret = "sh4";
 #endif
-#if defined(__sh4eb__)
+#ifdef __sh4eb__
 	ret = "sh4eb";
 #endif
-#if defined(__sparc__)
+#ifdef __sparc__
 	ret = "sparc";
 #endif
-#if defined(__sparc32plus__)
+#ifdef __sparc32plus__
 	ret = "sparc32plus";
 #endif
-#if defined(__sparc64__)
+#ifdef __sparc64__
 	ret = "sparc64";
 #endif
-#if defined(__x86_64__)
+#ifdef __x86_64__
 	ret = "amd64";
 #endif
-#if defined(__xtensa__)
+#ifdef __xtensa__
 	ret = "xtensa";
 #endif
-#if defined(__xtensaeb__)
+#ifdef __xtensaeb__
 	ret = "xtensaeb";
 #endif
 	if (ret == NULL) {
@@ -361,97 +365,97 @@ char *rurima_lxc_get_host_arch(void)
 	 * Do not free() the returned value.
 	 */
 	char *ret = NULL;
-#if defined(__aarch64__)
+#ifdef __aarch64__
 	ret = "arm64";
 #endif
-#if defined(__alpha__)
+#ifdef __alpha__
 	ret = "alpha";
 #endif
-#if defined(__arm__)
+#ifdef __arm__
 	ret = "armhf";
 #endif
-#if defined(__armeb__)
+#ifdef __armeb__
 	ret = "armeabi";
 #endif
-#if defined(__cris__)
+#ifdef __cris__
 	ret = "cris";
 #endif
-#if defined(__hexagon__)
+#ifdef __hexagon__
 	ret = "hexagon";
 #endif
-#if defined(__hppa__)
+#ifdef __hppa__
 	ret = "hppa";
 #endif
-#if defined(__i386__)
+#ifdef __i386__
 	ret = "i386";
 #endif
-#if defined(__loongarch64__)
+#ifdef __loongarch64__
 	ret = "loongarch64";
 #endif
-#if defined(__m68k__)
+#ifdef __m68k__
 	ret = "m68k";
 #endif
-#if defined(__microblaze__)
+#ifdef __microblaze__
 	ret = "microblaze";
 #endif
-#if defined(__mips__)
+#ifdef __mips__
 	ret = "mips";
 #endif
-#if defined(__mips64__)
+#ifdef __mips64__
 	ret = "mips64";
 #endif
-#if defined(__mips64el__)
+#ifdef __mips64el__
 	ret = "mips64el";
 #endif
-#if defined(__mipsel__)
+#ifdef __mipsel__
 	ret = "mipsel";
 #endif
-#if defined(__mipsn32__)
+#ifdef __mipsn32__
 	ret = "mipsn32";
 #endif
-#if defined(__mipsn32el__)
+#ifdef __mipsn32el__
 	ret = "mipsn32el";
 #endif
-#if defined(__ppc__)
+#ifdef __ppc__
 	ret = "ppc";
 #endif
-#if defined(__ppc64__)
+#ifdef __ppc64__
 	ret = "ppc64";
 #endif
-#if defined(__ppc64le__)
+#ifdef __ppc64le__
 	ret = "ppc64le";
 #endif
-#if defined(__riscv32__)
+#ifdef __riscv32__
 	ret = "riscv32";
 #endif
-#if defined(__riscv64__)
+#ifdef __riscv64__
 	ret = "riscv64";
 #endif
-#if defined(__s390x__)
+#ifdef __s390x__
 	ret = "s390x";
 #endif
-#if defined(__sh4__)
+#ifdef __sh4__
 	ret = "sh4";
 #endif
-#if defined(__sh4eb__)
+#ifdef __sh4eb__
 	ret = "sh4eb";
 #endif
-#if defined(__sparc__)
+#ifdef __sparc__
 	ret = "sparc";
 #endif
-#if defined(__sparc32plus__)
+#ifdef __sparc32plus__
 	ret = "sparc32plus";
 #endif
-#if defined(__sparc64__)
+#ifdef __sparc64__
 	ret = "sparc64";
 #endif
-#if defined(__x86_64__)
+#ifdef __x86_64__
 	ret = "amd64";
 #endif
-#if defined(__xtensa__)
+#ifdef __xtensa__
 	ret = "xtensa";
 #endif
-#if defined(__xtensaeb__)
+#ifdef __xtensaeb__
 	ret = "xtensaeb";
 #endif
 	if (ret == NULL) {
@@ -471,7 +475,7 @@ bool rurima_rootless_supported(void)
 		}
 		exit(0);
 	}
-	int status;
+	int status = 0;
 	waitpid(pid, &status, 0);
 	if (WEXITSTATUS(status) == 0) {
 		return true;
@@ -542,7 +546,7 @@ size_t rurima_split_lines(const char *_Nonnull input, char ***_Nonnull lines)
 	if (count == 0) {
 		return 0;
 	}
-	*lines = malloc(sizeof(char *) * (count + 2));
+	*lines = (char **)malloc(sizeof(char *) * (count + 2));
 	input_copy = strdup(input);
 	line = strtok(input_copy, "\n");
 	size_t index = 0;
@@ -576,7 +580,8 @@ size_t rurima_split_lines_allow_null(const char *_Nonnull input, char ***_Nonnul
 	if (count == 0) {
 		return 0;
 	}
-	*lines = malloc(sizeof(char *) * (count + 2));
+	*lines = (char **)malloc(sizeof(char *) * (count + 2));
+	memset((void *)*lines, 0, sizeof(char *) * (count + 2));
 	input_copy = strdup(input);
 	p = input_copy;
 	line = strsep(&p, "\n");
@@ -591,6 +596,8 @@ size_t rurima_split_lines_allow_null(const char *_Nonnull input, char ***_Nonnul
 	}
 	free(input_copy);
 	rurima_log("{base}lines count: {green}%zu{clear}\n", count);
+// NOLINTBEGIN
+#ifdef RURIMA_DEBUG
 	for (size_t i = 0; i < count; i++) {
 		if ((*lines)[i] != NULL) {
 			rurima_log("{base}lines[%zu]: {cyan}%s{clear}\n", i, (*lines)[i]);
@@ -598,6 +605,8 @@ size_t rurima_split_lines_allow_null(const char *_Nonnull input, char ***_Nonnul
 			rurima_log("{base}lines[%zu]: {cyan}NULL{clear}\n", i);
 		}
 	}
+#endif
+	// NOLINTEND
 	(*lines)[count] = NULL; // Null-terminate the array
 	return count;
 }

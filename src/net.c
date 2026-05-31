@@ -144,7 +144,7 @@ fi \n\
  \n\
 ip netns exec \"$NETNS_NAME\" \"$@\" \n";
 	// Create a memfd.
-	int memfd = memfd_create("rurima_script", 0);
+	int memfd = memfd_create("rurima_script", MFD_CLOEXEC);
 	if (memfd == -1) {
 		perror("memfd_create");
 		exit(1);
@@ -161,7 +161,7 @@ ip netns exec \"$NETNS_NAME\" \"$@\" \n";
 			break;
 		}
 	}
-	char **wrapper_argv = malloc(sizeof(char *) * (argc + 8));
+	char **wrapper_argv = (char **)malloc(sizeof(char *) * (argc + 8));
 	wrapper_argv[0] = NULL;
 	rurima_add_argv(&wrapper_argv, "sh");
 	rurima_add_argv(&wrapper_argv, script_path);

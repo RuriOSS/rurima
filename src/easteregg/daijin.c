@@ -28,7 +28,8 @@
  *
  */
 #include "daijin.h"
-// NOLINTNEXTLINE
+// NOLINTBEGIN
+// Never care this file bro.
 static short x_win, y_win;
 static size_t strlen_char32_rma(const char32_t *_Nonnull str)
 {
@@ -141,3 +142,4 @@ void rurima_QwQ(void)
 	printf("\033[?1049l");
 	printf("\033[?25h");
 }
+// NOLINTEND

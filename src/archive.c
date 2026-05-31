@@ -57,13 +57,13 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 	 * If we are not running with root, and proot exist,
 	 * we will use proot to extract the archive.
 	 */
-	char **ret = malloc(sizeof(char *) * 14);
+	char **ret = (char **)malloc(sizeof(char *) * 14);
 	ret[0] = NULL;
 	char *file_command[] = { "file", "--brief", "--mime-type", file, NULL };
 	char *type = rurima_fork_execvp_get_stdout(file_command);
 	if (type == NULL) {
 		rurima_error("{red}Failed to get file type!\n");
-		free(ret);
+		free((void *)ret);
 		return NULL;
 	}
 	type[strlen(type) - 1] = '\0';
@@ -77,7 +77,7 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 				rurima_add_argv(&ret, "-xpzf");
 				rurima_add_argv(&ret, "-");
 				rurima_add_argv(&ret, "-C");
-				rurima_add_argv(&ret, (char *)dir);
+				rurima_add_argv(&ret, dir);
 			} else if (strcmp(type, "application/x-xz") == 0) {
 				rurima_add_argv(&ret, "proot");
 				rurima_add_argv(&ret, "-0");
@@ -86,7 +86,7 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 				rurima_add_argv(&ret, "-xpJf");
 				rurima_add_argv(&ret, "-");
 				rurima_add_argv(&ret, "-C");
-				rurima_add_argv(&ret, (char *)dir);
+				rurima_add_argv(&ret, dir);
 			} else if (strcmp(type, "application/x-tar") == 0) {
 				rurima_add_argv(&ret, "proot");
 				rurima_add_argv(&ret, "-0");
@@ -95,10 +95,10 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 				rurima_add_argv(&ret, "-xpf");
 				rurima_add_argv(&ret, "-");
 				rurima_add_argv(&ret, "-C");
-				rurima_add_argv(&ret, (char *)dir);
+				rurima_add_argv(&ret, dir);
 			} else {
 				free(type);
-				free(ret);
+				free((void *)ret);
 				return NULL;
 			}
 		} else {
@@ -109,7 +109,7 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 				rurima_add_argv(&ret, "-xpzf");
 				rurima_add_argv(&ret, "-");
 				rurima_add_argv(&ret, "-C");
-				rurima_add_argv(&ret, (char *)dir);
+				rurima_add_argv(&ret, dir);
 			} else if (strcmp(type, "application/x-xz") == 0) {
 				rurima_add_argv(&ret, "proot");
 				rurima_add_argv(&ret, "-0");
@@ -117,7 +117,7 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 				rurima_add_argv(&ret, "-xpJf");
 				rurima_add_argv(&ret, "-");
 				rurima_add_argv(&ret, "-C");
-				rurima_add_argv(&ret, (char *)dir);
+				rurima_add_argv(&ret, dir);
 			} else if (strcmp(type, "application/x-tar") == 0) {
 				rurima_add_argv(&ret, "proot");
 				rurima_add_argv(&ret, "-0");
@@ -125,10 +125,10 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 				rurima_add_argv(&ret, "-xpf");
 				rurima_add_argv(&ret, "-");
 				rurima_add_argv(&ret, "-C");
-				rurima_add_argv(&ret, (char *)dir);
+				rurima_add_argv(&ret, dir);
 			} else {
 				free(type);
-				free(ret);
+				free((void *)ret);
 				return NULL;
 			}
 		}
@@ -138,22 +138,22 @@ static char **get_extract_command(char *_Nonnull file, char *_Nonnull dir)
 			rurima_add_argv(&ret, "-xpzf");
 			rurima_add_argv(&ret, "-");
 			rurima_add_argv(&ret, "-C");
-			rurima_add_argv(&ret, (char *)dir);
+			rurima_add_argv(&ret, dir);
 		} else if (strcmp(type, "application/x-xz") == 0) {
 			rurima_add_argv(&ret, "tar");
 			rurima_add_argv(&ret, "-xpJf");
 			rurima_add_argv(&ret, "-");
 			rurima_add_argv(&ret, "-C");
-			rurima_add_argv(&ret, (char *)dir);
+			rurima_add_argv(&ret, dir);
 		} else if (strcmp(type, "application/x-tar") == 0) {
 			rurima_add_argv(&ret, "tar");
 			rurima_add_argv(&ret, "-xpf");
 			rurima_add_argv(&ret, "-");
 			rurima_add_argv(&ret, "-C");
-			rurima_add_argv(&ret, (char *)dir);
+			rurima_add_argv(&ret, dir);
 		} else {
 			free(type);
-			free(ret);
+			free((void *)ret);
 			return NULL;
 		}
 	}
@@ -192,7 +192,7 @@ static void show_progress(double per)
 	fflush(stdout);
 	printf("\033[?25h");
 }
-static void show_progress_with_line(float per, int line)
+static void show_progress_with_line(float per, int __attribute__((unused)) line)
 {
 	/*
 	 * Show progress bar.
@@ -208,7 +208,7 @@ static void show_progress_with_line(float per, int line)
 	struct winsize size;
 	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
 	unsigned short width = size.ws_col - 10;
-	unsigned short pos = (unsigned short)(width * per);
+	unsigned short pos = width * (unsigned short)per;
 	printf("\033[?25l");
 	printf("\r[\033[32m");
 	for (unsigned short i = 0; i < pos; i++) {
@@ -244,13 +244,13 @@ int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir)
 		rurima_error("{red}Unsupported file type!\n");
 	}
 	if (rurima_mkdirs(dir, 0755) == -1) {
-		free(command);
+		free((void *)command);
 		rurima_error("{red}Failed to create directory!\n");
 	}
 	cprintf("{base}Extracting {cyan}%s\n", file);
-	int fd = open(file, O_RDONLY);
+	int fd = open(file, O_RDONLY | O_CLOEXEC);
 	if (fd < 0) {
-		free(command);
+		free((void *)command);
 		rurima_error("{red}Failed to open file!\n");
 	}
 	struct cth_result *result = cth_exec_with_file_input(command, fd, true, true, show_progress_with_line, 0);
@@ -261,7 +261,7 @@ int rurima_extract_archive(char *_Nonnull file, char *_Nonnull dir)
 		rurima_warning("{yellow}stdout: %s\n", result->stdout_ret);
 	}
 	cth_free_result(&result);
-	free(command);
+	free((void *)command);
 	return 0;
 }
 static int tar_backup__(const char *_Nonnull file, const char *_Nonnull dir)
@@ -274,10 +274,15 @@ static int tar_backup__(const char *_Nonnull file, const char *_Nonnull dir)
 	close(open(file, O_CLOEXEC | O_CREAT, 0755));
 	char *file_realpath = realpath(file, NULL);
 	char *dir_realpath = realpath(dir, NULL);
-	int nullfd = open("/dev/null", O_RDWR);
-	dup2(nullfd, STDOUT_FILENO);
-	dup2(nullfd, STDERR_FILENO);
+	int nullfd = open("/dev/null", O_RDWR | O_CLOEXEC);
+	if (nullfd >= 0) {
+		dup2(nullfd, STDOUT_FILENO);
+		dup2(nullfd, STDERR_FILENO);
+	}
 	int ret = 0;
+	if (!file_realpath || !dir_realpath) {
+		rurima_error("{red}Failed to get real path!\n");
+	}
 	if (strstr(file_realpath, dir_realpath) != NULL) {
 		chdir(dir);
 		char exclude[PATH_MAX + 12] = { '\0' };
@@ -331,20 +336,19 @@ int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir)
 		rurima_warning("{yellow}du not found, progress will not be shown.\n");
 		pid_t pid = fork();
 		if (pid > 0) {
-			int status;
+			int status = 0;
 			waitpid(pid, &status, 0);
 			return WEXITSTATUS(status);
-		} else {
-			int exstat = tar_backup__(file, dir);
-			exit(exstat);
 		}
+		int exstat = tar_backup__(file, dir);
+		exit(exstat);
 	}
 	cprintf("{base}Getting total size to backup\n");
 	off_t totalsize = rurima_get_dir_file_size(dir);
 	cprintf("{base}Backing up to {cyan}%s\n", file);
 	pid_t pid = fork();
 	if (pid > 0) {
-		int status;
+		int status = 0;
 		waitpid(pid, &status, WNOHANG);
 		off_t totalsize_bk = totalsize;
 		while (waitpid(pid, &status, WNOHANG) == 0) {
@@ -359,10 +363,10 @@ int rurima_backup_dir(char *_Nonnull file, char *_Nonnull dir)
 		}
 		show_progress(1.0);
 		return WEXITSTATUS(status);
-	} else {
-		int exstat = tar_backup__(file, dir);
-		exit(exstat);
 	}
+	int exstat = tar_backup__(file, dir);
+	exit(exstat);
+
 	return 0;
 }
 static int download_file__(char *_Nonnull url, char *_Nonnull file, char *_Nullable token)
@@ -433,7 +437,7 @@ int rurima_download_file(char *_Nonnull url, char *_Nonnull file, char *_Nullabl
 	}
 	pid_t pid = fork();
 	if (pid > 0) {
-		int status;
+		int status = 0;
 		waitpid(pid, &status, WNOHANG);
 		off_t size_bk = size;
 		while (waitpid(pid, &status, WNOHANG) == 0) {
@@ -449,10 +453,9 @@ int rurima_download_file(char *_Nonnull url, char *_Nonnull file, char *_Nullabl
 		show_progress(1.0);
 		rurima_log("{green}Download complete.\n");
 		return status;
-	} else {
-		int exstat = download_file__(url, file, token);
-		rurima_log("{green}Download complete.\n");
-		exit(exstat);
 	}
+	int exstat = download_file__(url, file, token);
+	rurima_log("{green}Download complete.\n");
+	exit(exstat);
 	return 0;
 }

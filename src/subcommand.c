@@ -51,7 +51,8 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 	/*
 	 * Try mirrors.
 	 */
-	char **rexec_argv = malloc(128 * sizeof(char *));
+	// NOLINTBEGIN
+	char **rexec_argv = (char **)malloc(128 * sizeof(char *));
 	rexec_argv[0] = NULL;
 	for (int i = 0; try_mirrorlist[i] != NULL; i++) {
 		cprintf("{base}Trying mirror: {cyan}%s\n", try_mirrorlist[i]);
@@ -59,15 +60,15 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 		rurima_add_argv(&rexec_argv, "docker");
 		rurima_add_argv(&rexec_argv, "pull");
 		rurima_add_argv(&rexec_argv, "-i");
-		rurima_add_argv(&rexec_argv, (char *)image);
+		rurima_add_argv(&rexec_argv, image);
 		rurima_add_argv(&rexec_argv, "-t");
-		rurima_add_argv(&rexec_argv, (char *)tag);
+		rurima_add_argv(&rexec_argv, tag);
 		rurima_add_argv(&rexec_argv, "-a");
-		rurima_add_argv(&rexec_argv, (char *)architecture);
+		rurima_add_argv(&rexec_argv, architecture);
 		rurima_add_argv(&rexec_argv, "-s");
-		rurima_add_argv(&rexec_argv, (char *)savedir);
+		rurima_add_argv(&rexec_argv, savedir);
 		rurima_add_argv(&rexec_argv, "-m");
-		rurima_add_argv(&rexec_argv, (char *)try_mirrorlist[i]);
+		rurima_add_argv(&rexec_argv, try_mirrorlist[i]);
 		if (fallback) {
 			rurima_add_argv(&rexec_argv, "-f");
 			if (rurima_fork_rexec(rexec_argv) == 0) {
@@ -86,20 +87,20 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 	char *mirrorlist_builtin[] = { rurima_global_config.docker_mirror, "hub.xdark.top", "dockerpull.org", "hub.crdz.gq", "docker.1panel.live", "docker.unsee.tech", "docker.m.daocloud.io", "docker.kejinlion.pro", "registry.dockermirror.com", "hub.rat.dev", "dhub.kubesre.xyz", "docker.nastool.de", "docker.udayun.com", "docker.rainbond.cc", "hub.geekery.cn", "registry.hub.docker.com", NULL };
 	for (int i = 0; mirrorlist_builtin[i] != NULL; i++) {
 		cprintf("{base}Trying mirror: {cyan}%s\n", mirrorlist_builtin[i]);
-		char **rexec_argv_builtin = malloc(128 * sizeof(char *));
+		char **rexec_argv_builtin = (char **)malloc(128 * sizeof(char *));
 		rexec_argv_builtin[0] = NULL;
 		rurima_add_argv(&rexec_argv_builtin, "docker");
 		rurima_add_argv(&rexec_argv_builtin, "pull");
 		rurima_add_argv(&rexec_argv_builtin, "-i");
-		rurima_add_argv(&rexec_argv_builtin, (char *)image);
+		rurima_add_argv(&rexec_argv_builtin, image);
 		rurima_add_argv(&rexec_argv_builtin, "-t");
-		rurima_add_argv(&rexec_argv_builtin, (char *)tag);
+		rurima_add_argv(&rexec_argv_builtin, tag);
 		rurima_add_argv(&rexec_argv_builtin, "-a");
-		rurima_add_argv(&rexec_argv_builtin, (char *)architecture);
+		rurima_add_argv(&rexec_argv_builtin, architecture);
 		rurima_add_argv(&rexec_argv_builtin, "-s");
-		rurima_add_argv(&rexec_argv_builtin, (char *)savedir);
+		rurima_add_argv(&rexec_argv_builtin, savedir);
 		rurima_add_argv(&rexec_argv_builtin, "-m");
-		rurima_add_argv(&rexec_argv_builtin, (char *)mirrorlist_builtin[i]);
+		rurima_add_argv(&rexec_argv_builtin, mirrorlist_builtin[i]);
 		if (fallback) {
 			rurima_add_argv(&rexec_argv_builtin, "-f");
 		}
@@ -113,9 +114,10 @@ static void docker_pull_try_mirrors(const char *_Nonnull image, const char *_Non
 		} else {
 			cprintf("\n{yellow}Mirror {cyan}%s {yellow}is not working!\n\n", mirrorlist_builtin[i]);
 		}
-		free(rexec_argv_builtin);
+		free((void *)rexec_argv_builtin);
 	}
 	cprintf("{red}All mirrors are not working!\n");
+	// NOLINTEND
 }
 /*
  * Subcommand for rurima.
@@ -149,6 +151,9 @@ void rurima_docker(int argc, char **_Nonnull argv)
 		if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--image") == 0) {
 			if (i + 1 >= argc) {
 				rurima_error("{red}No image specified!\n");
+			}
+			if (image) {
+				rurima_error("{red}Image already specified!\n");
 			}
 			image = strdup(argv[i + 1]);
 			i++;
@@ -589,7 +594,8 @@ void rurima_pull(int argc, char **_Nonnull argv)
 			cprintf("{base}It will re-exec itself to call the subcommand.\n");
 			cprintf("{base}If -d option is not set, it will find lxc mirror first.\n");
 			return;
-		} else if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mirror") == 0) {
+		}
+		if (strcmp(argv[i], "-m") == 0 || strcmp(argv[i], "--mirror") == 0) {
 			if (i + 1 >= argc) {
 				rurima_error("{red}No mirror specified!\n");
 			}
@@ -624,7 +630,7 @@ void rurima_pull(int argc, char **_Nonnull argv)
 			} else {
 				rurima_error("{red}No save directory specified!\n");
 			}
-			char **rexec_argv = malloc(sizeof(char *) * 114);
+			char **rexec_argv = (char **)malloc(sizeof(char *) * 114);
 			rexec_argv[0] = NULL;
 			if (!docker_only && rurima_lxc_have_image(mirror, image, version, architecture, NULL)) {
 				if (mirror == NULL) {
@@ -636,15 +642,15 @@ void rurima_pull(int argc, char **_Nonnull argv)
 				rurima_add_argv(&rexec_argv, "lxc");
 				rurima_add_argv(&rexec_argv, "pull");
 				rurima_add_argv(&rexec_argv, "-m");
-				rurima_add_argv(&rexec_argv, (char *)mirror);
+				rurima_add_argv(&rexec_argv, mirror);
 				rurima_add_argv(&rexec_argv, "-o");
-				rurima_add_argv(&rexec_argv, (char *)image);
+				rurima_add_argv(&rexec_argv, image);
 				rurima_add_argv(&rexec_argv, "-v");
-				rurima_add_argv(&rexec_argv, (char *)version);
+				rurima_add_argv(&rexec_argv, version);
 				rurima_add_argv(&rexec_argv, "-a");
-				rurima_add_argv(&rexec_argv, (char *)architecture);
+				rurima_add_argv(&rexec_argv, architecture);
 				rurima_add_argv(&rexec_argv, "-s");
-				rurima_add_argv(&rexec_argv, (char *)savedir);
+				rurima_add_argv(&rexec_argv, savedir);
 				int exit_status = rurima_fork_rexec(rexec_argv);
 				exit(exit_status);
 			} else {
@@ -660,18 +666,18 @@ void rurima_pull(int argc, char **_Nonnull argv)
 					rurima_add_argv(&rexec_argv, "-f");
 				}
 				rurima_add_argv(&rexec_argv, "-i");
-				rurima_add_argv(&rexec_argv, (char *)image);
+				rurima_add_argv(&rexec_argv, image);
 				rurima_add_argv(&rexec_argv, "-t");
-				rurima_add_argv(&rexec_argv, (char *)version);
+				rurima_add_argv(&rexec_argv, version);
 				rurima_add_argv(&rexec_argv, "-a");
-				rurima_add_argv(&rexec_argv, (char *)architecture);
+				rurima_add_argv(&rexec_argv, architecture);
 				rurima_add_argv(&rexec_argv, "-s");
-				rurima_add_argv(&rexec_argv, (char *)savedir);
+				rurima_add_argv(&rexec_argv, savedir);
 				rurima_add_argv(&rexec_argv, "-m");
-				rurima_add_argv(&rexec_argv, (char *)mirror);
+				rurima_add_argv(&rexec_argv, mirror);
 				if (start_at != NULL) {
 					rurima_add_argv(&rexec_argv, "-S");
-					rurima_add_argv(&rexec_argv, (char *)start_at);
+					rurima_add_argv(&rexec_argv, start_at);
 				}
 				int exit_status = rurima_fork_rexec(rexec_argv);
 				exit(exit_status);
@@ -714,14 +720,15 @@ void rurima_ota(void)
 	}
 	cprintf("{base}New version available: {cyan}%s\n{base}You are using {cyan}%s\n", commit_id_remote, commit_id_local);
 	char *tmpdir = getenv("TMPDIR");
-	if (!tmpdir)
+	if (!tmpdir) {
 		tmpdir = "/tmp";
+	}
 	chdir(tmpdir);
 	// Download.
 	char URL[PATH_MAX];
 	char *hostarch = "unknown";
 	// Map hostarch。
-#if defined(__aarch64__)
+#ifdef __aarch64__
 	hostarch = "aarch64";
 #elif defined(__arm__)
 	hostarch = "armhf";
@@ -762,7 +769,6 @@ void rurima_ota(void)
 	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima", NULL });
 	rurima_fork_execvp((char *[]){ "rm", "-f", "rurima-dbg", NULL });
 	rurima_fork_execvp((char *[]){ "rm", "-f", "LICENSE", NULL });
-	return;
 }
 /*
  * run
@@ -812,7 +818,7 @@ void rurima_load_rootfs(int argc, char **argv)
 	// Read manifest.json
 	char manifest_path[PATH_MAX];
 	sprintf(manifest_path, "%s/manifest.json", tmp_dir);
-	FILE *manifest_file = fopen(manifest_path, "r");
+	FILE *manifest_file = fopen(manifest_path, "re");
 	if (!manifest_file) {
 		rurima_error("{red}Failed to open manifest.json!\n");
 	}
@@ -820,9 +826,16 @@ void rurima_load_rootfs(int argc, char **argv)
 	if (fstat(fileno(manifest_file), &st) != 0) {
 		rurima_error("{red}Failed to stat manifest.json!\n");
 	}
-	char *manifest_content = malloc(st.st_size + 1);
+	if (st.st_size <= 1 || st.st_size > (off_t)(1024 * 1024)) {
+		rurima_error("{red}Manifest file size is invalid: %ld bytes!\n", st.st_size);
+	}
+	char *manifest_content = malloc(st.st_size + 2);
 	fread(manifest_content, 1, st.st_size, manifest_file);
+	// NOLINTBEGIN
+	// TODO: WTH is the warning?
 	manifest_content[st.st_size] = 0;
+	manifest_content[st.st_size + 1] = 0;
+	// NOLINTEND
 	fclose(manifest_file);
 	char *config_file = rurima_call_jq((char *[]){ "jq", "-r", ".[].Config", NULL }, manifest_content);
 	if (!config_file) {
@@ -852,7 +865,7 @@ void rurima_load_rootfs(int argc, char **argv)
 	char config_file_path[PATH_MAX];
 	char *config_content = NULL;
 	sprintf(config_file_path, "%s/%s", tmp_dir, configs[0]);
-	FILE *config_file_fp = fopen(config_file_path, "r");
+	FILE *config_file_fp = fopen(config_file_path, "re");
 	if (!config_file_fp) {
 		rurima_error("{red}Failed to open config file %s!\n", config_file_path);
 	}
@@ -860,9 +873,19 @@ void rurima_load_rootfs(int argc, char **argv)
 	if (stat(config_file_path, &config_st) != 0) {
 		rurima_error("{red}Failed to stat config file %s!\n", config_file_path);
 	}
-	config_content = malloc(config_st.st_size + 1);
-	fread(config_content, 1, config_st.st_size, config_file_fp);
-	config_content[config_st.st_size] = 0;
+	if (config_st.st_size <= 1 || config_st.st_size > (off_t)(1024 * 1024)) {
+		rurima_error("{red}Config file size is invalid: %ld bytes!\n", config_st.st_size);
+	}
+	config_content = malloc(config_st.st_size + 2);
+	size_t bytes_read = fread(config_content, 1, config_st.st_size, config_file_fp);
+	if (bytes_read != (size_t)config_st.st_size) {
+		rurima_error("{red}Failed to read config file %s!\n", config_file_path);
+	} else {
+		// NOLINTBEGIN
+		// TODO: WTH is the warning?
+		config_content[bytes_read] = '\0';
+		// NOLINTEND
+	}
 	fclose(config_file_fp);
 	// Print config.
 	rurima_docker_print_config_from_json(config_content, rootfs_path);
@@ -872,17 +895,19 @@ void rurima_load_rootfs(int argc, char **argv)
 	for (size_t i = 0; i < layers_len; i++) {
 		free(layers[i]);
 	}
-	free(layers);
+	free((void *)layers);
 	for (size_t i = 0; i < config_len; i++) {
 		free(configs[i]);
 	}
-	free(configs);
+	free((void *)configs);
 	free(config_content);
 	rurima_check_dir_deny_list(tmp_dir);
 	cth_exec_command((char *[]){ "rm", "-rf", tmp_dir, NULL });
 	exit(0);
 }
+// NOLINTBEGIN
 void rurima_sfx(int argc, char **_Nonnull argv)
 {
 	rurima_error("{red}Not implemented yet!\n");
 }
+// NOLINTEND

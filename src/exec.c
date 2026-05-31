@@ -78,7 +78,7 @@ char *rurima_fork_execvp_get_stdout(char *_Nonnull argv[])
 	cth_free_result(&result);
 	return NULL;
 }
-void rurima_add_argv(char ***_Nonnull argv, char *_Nonnull arg)
+void rurima_add_argv(char ***_Nonnull argv, const char *_Nonnull arg)
 {
 	/*
 	 * Add an argument to the argv array.
@@ -88,7 +88,8 @@ void rurima_add_argv(char ***_Nonnull argv, char *_Nonnull arg)
 	while ((*argv)[argc] != NULL) {
 		argc++;
 	}
-	(*argv)[argc] = arg;
+	// TODO: when to free()?
+	(*argv)[argc] = strdup(arg);
 	(*argv)[argc + 1] = NULL;
 }
 int rurima_fork_rexec(char **_Nonnull argv)
@@ -98,7 +99,7 @@ int rurima_fork_rexec(char **_Nonnull argv)
 	 */
 	return cth_fork_rexec_self(argv);
 }
-char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], char *_Nonnull input)
+char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], const char *_Nonnull input)
 {
 	/*
 	 * Warning: free() after use.
@@ -107,7 +108,7 @@ char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], char *_Non
 	 * Return the stdout of the child process.
 	 * If failed, return NULL.
 	 */
-	struct cth_result *result = cth_exec(argv, input, true, true);
+	struct cth_result *result = cth_exec(argv, (char *)input, true, true);
 	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
 	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);
 	if (result->exit_code == 0) {
@@ -118,7 +119,7 @@ char *rurima_fork_execvp_get_stdout_with_input(char *_Nonnull argv[], char *_Non
 	cth_free_result(&result);
 	return NULL;
 }
-char *rurima_call_jq(char *_Nonnull argv[], char *_Nonnull input)
+char *rurima_call_jq(char *_Nonnull argv[], const char *_Nonnull input)
 {
 	/*
 	 * Call jq with input.
