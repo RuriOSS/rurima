@@ -9,9 +9,9 @@ void rurima_setup_termux_tmp(void)
 		fprintf(stderr, "Termux not found.\n");
 		exit(EXIT_FAILURE);
 	}
-	// get owner id of /data/data/com.termux/files/tmp.
+	// get owner id of /data/data/com.termux/files/usr.
 	struct stat st;
-	if (stat("/data/data/com.termux/files/tmp", &st) == -1) {
+	if (stat("/data/data/com.termux/files/usr", &st) == -1) {
 		perror("stat");
 		exit(EXIT_FAILURE);
 	}
