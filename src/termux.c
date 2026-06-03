@@ -26,14 +26,14 @@ void rurima_setup_termux_tmp(void)
 		exit(EXIT_FAILURE);
 	}
 	if (pid == 0) {
-		if (mount("tmpfs", "/tmp", "tmpfs", 0, "") == -1) {
+		if (mount("tmpfs", "/data/data/com.termux/files/usr/tmp", "tmpfs", 0, "") == -1) {
 			perror("mount");
 			exit(EXIT_FAILURE);
 		}
 		setuid(termux_uid);
 		setenv("PATH", "/data/data/com.termux/files/usr/bin", 1);
 		setenv("HOME", "/data/data/com.termux/files/home", 1);
-		setenv("TMPDIR", "/data/data/com.termux/files/tmp", 1);
+		setenv("TMPDIR", "/data/data/com.termux/files/usr/tmp", 1);
 		execl("/data/data/com.termux/files/usr/bin/bash", "bash", NULL);
 		perror("execl");
 		exit(EXIT_FAILURE);
