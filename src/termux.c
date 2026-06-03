@@ -1,18 +1,21 @@
 #include "include/rurima.h"
 void rurima_setup_termux_tmp(void)
 {
+	/*
+	 * Termux user cannot access tmpfs by default.
+	 * But if we setuid() from root, it will inherit the SELinux context of root.
+	 * And, using mount namespace to avoid affecting other termux processes.
+	 * This is a very hacky way and only tested on SukiSU Ultra 40790.
+	 */
 	if (getuid() != 0) {
 		fprintf(stderr, "This function must be run as root.\n");
-		exit(EXIT_FAILURE);
-	}
-	if (access("/data/data/com.termux/files/usr/bin/bash", F_OK) == -1) {
-		fprintf(stderr, "Termux not found.\n");
 		exit(EXIT_FAILURE);
 	}
 	// get owner id of /data/data/com.termux/files/usr.
 	struct stat st;
 	if (stat("/data/data/com.termux/files/usr", &st) == -1) {
 		perror("stat");
+		printf("Termux not found.\n");
 		exit(EXIT_FAILURE);
 	}
 	int termux_uid = st.st_uid;
