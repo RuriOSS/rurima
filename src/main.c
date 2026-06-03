@@ -297,6 +297,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		if (strcmp(argv[i], "netns") == 0) {
+			rurima_warning("{yellow}Are you Moe-hacker?\n");
 			rurima_netns_wrapper(argc - i - 1, &argv[i + 1]);
 			return 0;
 		}
@@ -306,6 +307,11 @@ int main(int argc, char **argv)
 		}
 		if (strcmp(argv[i], "sfx") == 0) {
 			rurima_sfx(argc - i - 1, &argv[i + 1]);
+			return 0;
+		}
+		if (strcmp(argv[i], "tmx") == 0) {
+			rurima_warning("{yellow}Are you Moe-hacker?\n");
+			rurima_setup_termux_tmp();
 			return 0;
 		}
 		show_help();

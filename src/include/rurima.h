@@ -205,3 +205,4 @@ void rurima_netns_wrapper(int argc, char **argv);
 void rurima_load_rootfs(int argc, char **argv);
 void rurima_docker_print_config_from_json(const char *_Nonnull config, const char *_Nonnull savedir);
 void rurima_sfx(int argc, char **argv);
+void rurima_setup_termux_tmp(void);

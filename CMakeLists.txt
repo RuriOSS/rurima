@@ -8,6 +8,7 @@ set(RURIMA_CORE_SOURCES
     src/checkdep.c
     src/dockerhub.c
     src/exec.c
+    src/termux.c
     src/info.c
     src/lxcmirror.c
     src/shared.c
