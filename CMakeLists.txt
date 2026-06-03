@@ -33,6 +33,7 @@ set(RURIMA_CORE_SOURCES
     src/ruri/src/mount.c
     src/ruri/src/k2v.c
     src/ruri/src/k2v3.c
+    src/ruri/src/watchdog.c
     src/ruri/src/elf-magic.c
     src/ruri/src/config.c
     src/ruri/src/cgroup.c
