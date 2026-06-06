@@ -37,6 +37,7 @@ int rurima_fork_execvp(char *_Nonnull argv[])
 	 */
 	struct cth_result *result = cth_exec(argv, NULL, true, false);
 	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
+	rurima_log("{base}Stderr: {green}%s{base}\n", result->stderr_ret);
 	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);
 	int exit_code = result->exit_code;
 	cth_free_result(&result);
