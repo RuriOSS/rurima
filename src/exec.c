@@ -35,7 +35,7 @@ int rurima_fork_execvp(char *_Nonnull argv[])
 	 * fork(2) and then execvp(3).
 	 * Return the exit status of the child process.
 	 */
-	struct cth_result *result = cth_exec(argv, NULL, true, false);
+	struct cth_result *result = cth_exec(argv, NULL, true, true);
 	rurima_log("{base}Exec {green}%s{base} result: {purple}\n%s\n", argv[0], result->stdout_ret);
 	rurima_log("{base}Stderr: {green}%s{base}\n", result->stderr_ret);
 	rurima_log("{base}Exit code: {green}%d{base}\n", result->exit_code);

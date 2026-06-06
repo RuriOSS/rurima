@@ -373,12 +373,7 @@ static int download_file__(char *_Nonnull url, char *_Nonnull file, char *_Nulla
 {
 	int status = 0;
 	if (token != NULL) {
-		char canary1[128] = { 0xFA };
 		char *command[] = { "curl", "-sL", "-o", file, "-H", token, url, NULL };
-		char canary2[128] = { 0xFA };
-		if (memcmp(canary1, canary2, 128) != 0) {
-			rurima_error("{red}Buffer overflow detected!\n");
-		}
 		status = rurima_fork_execvp(command);
 	} else {
 		char *command[] = { "curl", "-sL", "-o", file, url, NULL };

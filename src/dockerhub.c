@@ -622,12 +622,7 @@ static void pull_images(char *_Nonnull image, struct BLOBS *_Nonnull blobs, char
 		if (!fallback) {
 			ret = rurima_download_file(url, filename, auth, (ssize_t)blobs->size[i]);
 		} else {
-			char canary1[128] = { 0xFA };
 			char *curl_command[] = { "curl", "-L", "-s", "-H", auth, url, "-o", filename, NULL };
-			char canary2[128] = { 0xFA };
-			if (memcmp(canary1, canary2, 128) != 0) {
-				rurima_error("{red}Buffer overflow detected!\n");
-			}
 			ret = rurima_fork_execvp(curl_command);
 		}
 		if (ret != 0) {
