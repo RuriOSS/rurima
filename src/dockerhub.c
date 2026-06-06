@@ -977,7 +977,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	if (mirror == NULL) {
 		mirror = rurima_global_config.docker_mirror;
 	}
-	start_loading_animation("Fetching metadata...");
+	start_loading_animation("Thinking deeply...");
 	char *token = get_token(image, mirror, fallback);
 	char *manifests = get_tag_manifests(image, tag, token, mirror);
 	char *digest = get_tag_digest(manifests, architecture);
@@ -995,7 +995,7 @@ struct RURIMA_DOCKER *rurima_docker_pull(struct RURIMA_DOCKER_PULL *_Nonnull act
 	}
 	end_loading_animation();
 	pull_images(image, blobs, token, savedir, mirror, fallback, skip_layers);
-	start_loading_animation("Fetching config metadata...");
+	start_loading_animation("Thinking deeply...");
 	if (fallback) {
 		free(token);
 		token = get_token(image, mirror, true);
