@@ -196,10 +196,8 @@ void rurima_get_input(char *_Nonnull message, char *_Nonnull buf)
 }
 off_t rurima_get_file_size(const char *_Nonnull file)
 {
-	rurima_log("{base}Getting file size of {cyan}%s\n", file);
 	struct stat st;
 	if (stat(file, &st) == -1) {
-		rurima_log("{red}Failed to get file size!\n");
 		return 0;
 	}
 	rurima_log("{base}File size: {green}%ld\n", st.st_size);
