@@ -25,7 +25,6 @@ set(RURIMA_CORE_SOURCES
     src/ruri/src/cprintf.c
     src/ruri/src/info.c
     src/ruri/src/rurienv.c
-    src/ruri/src/rurifetch.c
     src/ruri/src/seccomp.c
     src/ruri/src/signal.c
     src/ruri/src/umount.c
@@ -41,6 +40,7 @@ set(RURIMA_CORE_SOURCES
     src/ruri/src/passwd.c
     src/ruri/src/ps.c
     src/ruri/src/ruri.c
+    src/ruri/src/flags.o
     # ruri easteregg
     src/ruri/src/easteregg/action.c
     src/ruri/src/easteregg/nekofeng.c
