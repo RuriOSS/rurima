@@ -7,6 +7,7 @@ set(RURIMA_CORE_SOURCES
     src/net.c
     src/checkdep.c
     src/dockerhub.c
+    src/bundle.c
     src/exec.c
     src/termux.c
     src/info.c

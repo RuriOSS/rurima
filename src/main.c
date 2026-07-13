@@ -293,7 +293,13 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		if (strcmp(argv[i], "run") == 0) {
+			rurima_warning("{yellow}Are you Moe-hacker?\n");
 			rurima_run(argc - i - 1, &argv[i + 1]);
+			return 0;
+		}
+		if (strcmp(argv[i], "create") == 0) {
+			rurima_warning("{yellow}Are you Moe-hacker?\n");
+			rurima_create(argc - i - 1, &argv[i + 1]);
 			return 0;
 		}
 		if (strcmp(argv[i], "netns") == 0) {
@@ -306,6 +312,7 @@ int main(int argc, char **argv)
 			return 0;
 		}
 		if (strcmp(argv[i], "sfx") == 0) {
+			rurima_warning("{yellow}Are you Moe-hacker?\n");
 			rurima_sfx(argc - i - 1, &argv[i + 1]);
 			return 0;
 		}
