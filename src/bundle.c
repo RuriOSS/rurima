@@ -39,6 +39,15 @@ void rurima_run(int argc, char **_Nonnull argv)
 		cprintf("  rurima run <bundle_path>\n");
 		return;
 	}
+	int pidfile_fd = memfd_create("test", MFD_CLOEXEC);
+	fchmod(pidfile_fd, S_IRUSR | S_IWUSR);
+	if (pidfile_fd == -1) {
+		rurima_error("{red}Failed to create pidfile: %s\n", strerror(errno));
+	}
+	char proc_fs_fd_path[PATH_MAX];
+	snprintf(proc_fs_fd_path, sizeof(proc_fs_fd_path), "/proc/%d/fd/%d", getpid(), pidfile_fd);
+	//
+	close(pidfile_fd);
 	rurima_error("{red}rurima run is WIP, it should not be used by users.\n");
 }
 void rurima_create(int argc, char **_Nonnull argv)
